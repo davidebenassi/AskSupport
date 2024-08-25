@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Home Page</h2>
+    <ul>
+        <li><a href="{% url 'companies_home_page' %}">Trova l'azienda</a></li>
+        <li><a href="{% url 'signup_page' %}">Registrazione Utenti</a></li>
+    </ul>
+    
+{% endblock %}
