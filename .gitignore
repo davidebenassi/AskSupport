@@ -1,3 +1,5 @@
 project-folder/AskSupport/__pycache__
 project-folder/companies/__pycache__
-project-folder/companies//migrations/__pycache__
+project-folder/companies/migrations/__pycache__
+project-folder/users/__pycache__
+project-folder/users/migrations/__pycache__

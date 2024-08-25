@@ -6,5 +6,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('signup/', views.signup_page, name='signup_page'),
     path('companies/', include('companies.urls')),
+    path('users/', include('users.urls')),
     re_path(r"^$|^/$|^home/$", views.home, name='home'),
 ]
