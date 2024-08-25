@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Registrazione Azienda</h2>
+    <form method="POST">
+        {% csrf_token %}
+        <h5>Dati Amministratore</h5>
+        {{ form.admin_form.as_p }}
+        <h5>Dati Azienda</h5>
+        {{ form.company_form.as_p }}
+        <button type="submit">Registra Azienda</button>
+    </form>
+{% endblock %}
