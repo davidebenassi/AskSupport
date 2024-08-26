@@ -4,13 +4,13 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from .models import Company
 
-class AdminRegisterForm(UserCreationForm):
+class CompanyAdminForm(UserCreationForm):
 
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'email', 'password1', 'password2']
+        fields = ['first_name', 'last_name', 'username', 'email', 'password1', 'password2']
 
-class CompanyFormDefinition(forms.ModelForm):
+class CompanyForm(forms.ModelForm):
 
     class Meta:
         model = Company
@@ -19,12 +19,13 @@ class CompanyFormDefinition(forms.ModelForm):
 '''
 This form register an Admin and a company
 '''
-class CompanyRegisterForm(forms.Form):
+class CompanySignupForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
-        self.admin_form = AdminRegisterForm(*args, **kwargs)
-        self.company_form = CompanyFormDefinition(*args, **kwargs)
         super().__init__(*args, **kwargs)
+        self.admin_form = CompanyAdminForm(*args, **kwargs)
+        self.company_form = CompanyForm(*args, **kwargs)
+        
 
     def is_valid(self):
         return self.admin_form.is_valid() and self.company_form.is_valid()
