@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.views.generic import FormView
 from django.urls import reverse_lazy
+from django.contrib.auth.decorators import login_required
 
 
 from .models import Company
@@ -9,6 +10,10 @@ from .forms import CompanySignupForm
 def companies_home_page(request):
     companies = Company.objects.all()
     return render(request, 'companies_home_page.html', {'companies': companies})
+
+@login_required
+def admin_dashboard(request):
+    return render(request, 'admin_dashboard.html')
 
 # Using FormView instead of CreateView to handle the compbinated CompanySignupForm (it contains 2 forms) #
 class CompanySignupView(FormView):

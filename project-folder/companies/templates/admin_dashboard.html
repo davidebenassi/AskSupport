@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Admin Dashboard</h2>
+    {% if user.is_authenticated and "ok" in request.GET.login %}
+        <p> Utente : {{user.username}}</p>
+        <p> Amministratore di : {{user.related_company}}</p>
+
+        <form method="POST" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button type="submit" >Logout</button>
+        </form>
+    {% endif %}
+{% endblock %}
