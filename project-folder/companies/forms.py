@@ -1,31 +1,31 @@
 from django import forms
 from django.contrib.auth.models import Group
-#from django.contrib.auth.forms import UserCreationForm
-#from django.contrib.auth.models import User
-from .models import Company
+from .models import Company, Employee
 
 from users.forms import UserForm 
 
-'''
-class CompanyAdminForm(UserCreationForm):
-
-    class Meta:
-        model = User
-        fields = ['first_name', 'last_name', 'username', 'email', 'password1', 'password2']
-'''
-
 class CompanyForm(forms.ModelForm):
-
     class Meta:
         model = Company
         fields = ['name', 'description']
+
+class EmployeeForm(forms.ModelForm):
+
+    company = forms.ModelChoiceField(
+        queryset=Company.objects.all(),
+        widget=forms.Select(),
+        empty_label='Select your company',
+        help_text='Be sure your company is registerd'
+    )
+    class Meta:
+        model = Employee
+        fields = ['company']
 
 # * Rendered Form to register a new Company and its Admin * #
 class CompanySignupForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        #self.admin_form = CompanyAdminForm(*args, **kwargs)
         self.adminForm = UserForm(*args, **kwargs)
         self.companyForm = CompanyForm(*args, **kwargs)
         
@@ -51,3 +51,33 @@ class CompanySignupForm(forms.Form):
             company.save()
 
         return admin, company
+
+class EmployeeSignupForm(forms.Form):
+    def __init__(self, *args, **kwargs):
+
+        super().__init__(*args, **kwargs)
+        self.userForm = UserForm(*args, **kwargs)
+        self.employeeForm = EmployeeForm(*args, **kwargs)
+   
+    
+    def is_valid(self) -> bool:
+        return self.userForm.is_valid() and self.employeeForm.is_valid()
+
+    def save(self, commit=True):
+        
+        # First, save the user #
+        user = self.userForm.save(commit=False)
+        if commit:
+            user.save()
+
+            # Add user to "Employees" group #
+            group, created = Group.objects.get_or_create(name='Employees')
+            user.groups.add(group)
+
+        # Last, save the employee with the proper user #
+        employee = self.employeeForm.save(commit=False)
+        employee.user = user
+        if commit:
+            employee.save()
+
+        return user, employee
