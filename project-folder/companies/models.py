@@ -10,7 +10,7 @@ class Company(models.Model):
         return self.name
 
 class Employee(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='employee')
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     is_approved = models.BooleanField(default=False)
 

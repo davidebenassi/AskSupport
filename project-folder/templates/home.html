@@ -2,6 +2,15 @@
 
 {% block content %}
     <h2>Home Page</h2>
+
+    {% if user.is_authenticated and "ok" in request.GET.login %}
+        <p>Utente: {{ user.username }}</p>
+
+        <form method="POST" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button type="submit">Logout</button>
+        </form>
+    {% endif %}
     <ul>
         <li><a href="{% url 'companies_home_page' %}">Trova l'azienda</a></li>
         <li><a href="{% url 'signup_page' %}">Registrazione Utenti</a></li>

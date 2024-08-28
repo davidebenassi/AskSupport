@@ -5,9 +5,9 @@
     <form method="POST">
         {% csrf_token %}
         <h5>Dati Amministratore</h5>
-        {{ form.admin_form.as_p }}
+        {{ form.adminForm.as_p }}
         <h5>Dati Azienda</h5>
-        {{ form.company_form.as_p }}
+        {{ form.companyForm.as_p }}
         <button type="submit">Registra Azienda</button>
     </form>
 {% endblock %}

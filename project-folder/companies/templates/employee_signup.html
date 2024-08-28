@@ -1,11 +1,12 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h2>Registrazione Utente</h2>
+    <h2>Employee Signup</h2>
     <form method="POST">
         {% csrf_token %}
+        
         {{ form.userForm.as_p }}
-        {{ form.userProfileForm.as_p }}
-        <button type="submit">Registra Utente</button>
+        {{ form.employeeForm.as_p }}
+        <button type="submit">Signup</button>
     </form>
 {% endblock %}
