@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>{{ company.name }}</h1>
+    <p>{{ company.description }}</p>
+    <p>Admin: {{ company.admin.username }}</p>
+    <p>Email di contatto: {{ company.admin.email }}</p>
+
+    <!-- Aggiungi qui altri dettagli rilevanti per la company -->
+
+    <a href="{% url 'home' %}">Ritorna alla home</a>
+{% endblock %}

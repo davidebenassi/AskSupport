@@ -22,6 +22,11 @@ def companies_home_page(request):
     companies = Company.objects.all()
     return render(request, 'companies_home_page.html', {'companies': companies})
 
+def company_page(request, pk):
+    company = get_object_or_404(Company, pk=pk)
+    return render(request, 'company_page.html', {'company': company})
+
+
 @user_passes_test(is_admin)
 def admin_dashboard(request):
     company = request.user.related_company
