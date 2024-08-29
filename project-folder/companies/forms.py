@@ -1,48 +1,83 @@
 from django import forms
 from django.contrib.auth.models import Group
-from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth.models import User
-from .models import Company
+from .models import Company, EmployeeProfile
 
-class AdminRegisterForm(UserCreationForm):
+from users.forms import UserForm 
 
-    class Meta:
-        model = User
-        fields = ['first_name', 'last_name', 'email', 'password1', 'password2']
-
-class CompanyFormDefinition(forms.ModelForm):
-
+class CompanyForm(forms.ModelForm):
     class Meta:
         model = Company
         fields = ['name', 'description']
 
-'''
-This form register an Admin and a company
-'''
-class CompanyRegisterForm(forms.Form):
+class EmployeeProfileForm(forms.ModelForm):
+
+    company = forms.ModelChoiceField(
+        queryset=Company.objects.all(),
+        widget=forms.Select(),
+        empty_label='Select your company',
+        help_text='Be sure your company is registerd'
+    )
+    class Meta:
+        model = EmployeeProfile
+        fields = ['company']
+
+# * Rendered Form to register a new Company and its Admin * #
+class CompanySignupForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
-        self.admin_form = AdminRegisterForm(*args, **kwargs)
-        self.company_form = CompanyFormDefinition(*args, **kwargs)
         super().__init__(*args, **kwargs)
+        self.adminForm = UserForm(*args, **kwargs)
+        self.companyForm = CompanyForm(*args, **kwargs)
+        
 
-    def is_valid(self):
-        return self.admin_form.is_valid() and self.company_form.is_valid()
+    def is_valid(self) -> bool:
+        return self.adminForm.is_valid() and self.companyForm.is_valid()
 
     def save(self, commit=True):
-        # Salva l'utente admin
-        user = self.admin_form.save(commit=False)
+        
+        # First, save the admin #
+        admin = self.adminForm.save(commit=False)
         if commit:
-            user.save()
+            admin.save()
 
-            # Aggiungi l'utente al gruppo "CompanyAdministrators"
+            # Add admin to "CompanyAdministrators" group #
             group, created = Group.objects.get_or_create(name='CompanyAdministrators')
-            user.groups.add(group)
+            admin.groups.add(group)
 
-        # Salva l'azienda associando l'utente appena creato come admin
-        company = self.company_form.save(commit=False)
-        company.admin = user
+        # Last, save the company with the proper admin #
+        company = self.companyForm.save(commit=False)
+        company.admin = admin
         if commit:
             company.save()
 
-        return user, company
+        return admin, company
+
+class EmployeeSignupForm(forms.Form):
+    def __init__(self, *args, **kwargs):
+
+        super().__init__(*args, **kwargs)
+        self.userForm = UserForm(*args, **kwargs)
+        self.employeeProfileForm = EmployeeProfileForm(*args, **kwargs)
+   
+    
+    def is_valid(self) -> bool:
+        return self.userForm.is_valid() and self.employeeProfileForm.is_valid()
+
+    def save(self, commit=True):
+        
+        # First, save the user #
+        user = self.userForm.save(commit=False)
+        if commit:
+            user.save()
+
+            # Add user to "Employees" group #
+            group, created = Group.objects.get_or_create(name='Employees')
+            user.groups.add(group)
+
+        # Last, save the employee with the proper user #
+        employeeProfile = self.employeeProfileForm.save(commit=False)
+        employeeProfile.user = user
+        if commit:
+            employeeProfile.save()
+
+        return user, employeeProfile

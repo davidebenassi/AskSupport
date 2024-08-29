@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Employee Dashboard</h2>
+    {% if user.is_authenticated and "ok" in request.GET.login %}
+        <p> Utente : {{user.username}}</p>
+        <p> Dipendente di : {{user.employee_profile.company.name}}</p>
+        {% if user.is_approved %}
+            <p> Approvato </p>
+        {% else %}
+            <p> In attesa di approvazione da parte dell'admin </p>
+        {% endif %}
+
+        
+        <form method="POST" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button type="submit" >Logout</button>
+        </form>
+    {% endif %}
+{% endblock %}

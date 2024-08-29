@@ -1,12 +1,12 @@
-from django.shortcuts import render, redirect
-from .forms import UserRegisterForm
+from .forms import UserSignupForm
+from django.views.generic import FormView
+from django.urls import reverse_lazy
 
-def register_user(request):
-    if request.method == 'POST':
-        form = UserRegisterForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('companies_home_page')
-    else:
-        form = UserRegisterForm()
-    return render(request, 'register_user.html', {'form': form})
+class UserSignupView(FormView):
+    form_class = UserSignupForm
+    template_name = 'user_signup.html'
+    success_url = reverse_lazy('login')
+
+    def form_valid(self, form):
+        form.save()
+        return super().form_valid(form)
