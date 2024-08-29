@@ -4,7 +4,7 @@
     <h2>Employee Dashboard</h2>
     {% if user.is_authenticated and "ok" in request.GET.login %}
         <p> Utente : {{user.username}}</p>
-        <p> Dipendente di : {{user.employee.company.name}}</p>
+        <p> Dipendente di : {{user.employee_profile.company.name}}</p>
         {% if user.is_approved %}
             <p> Approvato </p>
         {% else %}

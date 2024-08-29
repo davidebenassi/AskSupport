@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.models import Group
-from .models import Company, Employee
+from .models import Company, EmployeeProfile
 
 from users.forms import UserForm 
 
@@ -9,7 +9,7 @@ class CompanyForm(forms.ModelForm):
         model = Company
         fields = ['name', 'description']
 
-class EmployeeForm(forms.ModelForm):
+class EmployeeProfileForm(forms.ModelForm):
 
     company = forms.ModelChoiceField(
         queryset=Company.objects.all(),
@@ -18,7 +18,7 @@ class EmployeeForm(forms.ModelForm):
         help_text='Be sure your company is registerd'
     )
     class Meta:
-        model = Employee
+        model = EmployeeProfile
         fields = ['company']
 
 # * Rendered Form to register a new Company and its Admin * #
@@ -57,11 +57,11 @@ class EmployeeSignupForm(forms.Form):
 
         super().__init__(*args, **kwargs)
         self.userForm = UserForm(*args, **kwargs)
-        self.employeeForm = EmployeeForm(*args, **kwargs)
+        self.employeeProfileForm = EmployeeProfileForm(*args, **kwargs)
    
     
     def is_valid(self) -> bool:
-        return self.userForm.is_valid() and self.employeeForm.is_valid()
+        return self.userForm.is_valid() and self.employeeProfileForm.is_valid()
 
     def save(self, commit=True):
         
@@ -75,9 +75,9 @@ class EmployeeSignupForm(forms.Form):
             user.groups.add(group)
 
         # Last, save the employee with the proper user #
-        employee = self.employeeForm.save(commit=False)
-        employee.user = user
+        employeeProfile = self.employeeProfileForm.save(commit=False)
+        employeeProfile.user = user
         if commit:
-            employee.save()
+            employeeProfile.save()
 
-        return user, employee
+        return user, employeeProfile
