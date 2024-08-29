@@ -6,6 +6,66 @@
         <p> Utente : {{user.username}}</p>
         <p> Amministratore di : {{user.related_company}}</p>
 
+        <h3>Richieste di approvazione dei dipendenti</h3>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Approva</th>
+                    <th>Rimuovi</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for employee in unapproved_employees %}
+                    <tr>
+                        <td>{{ employee.user.username }}</td>
+                        <td>{{ employee.user.email }}</td>
+                        <td>
+                            <form method="POST" action="{% url 'approve_employee' employee.id %}">
+                                {% csrf_token %}
+                                <button type="submit">Approva</button>
+                            </form>
+                        </td>
+                        <td>
+                            <form method="POST" action="{% url 'remove_employee' employee.id %}">
+                                {% csrf_token %}
+                                <button type="submit">Rimuovi</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <h3>Dipendenti approvati</h3>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Rimuovi</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for employee in approved_employees %}
+                    <tr>
+                        <td>{{ employee.user.username }}</td>
+                        <td>{{ employee.user.email }}</td>
+                        <td>
+                            <form method="POST" action="{% url 'remove_employee' employee.id %}">
+                                {% csrf_token %}
+                                <button type="submit">Rimuovi</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+
         <form method="POST" action="{% url 'logout' %}">
             {% csrf_token %}
             <button type="submit" >Logout</button>

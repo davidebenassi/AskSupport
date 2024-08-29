@@ -5,7 +5,7 @@
     {% if user.is_authenticated and "ok" in request.GET.login %}
         <p> Utente : {{user.username}}</p>
         <p> Dipendente di : {{user.employee_profile.company.name}}</p>
-        {% if user.is_approved %}
+        {% if user.is_approved == true %}
             <p> Approvato </p>
         {% else %}
             <p> In attesa di approvazione da parte dell'admin </p>
