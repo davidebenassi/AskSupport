@@ -1,0 +1,30 @@
+[
+    {
+        "first_name" : "Davide",
+        "last_name" : "Benassi", 
+        "username" : "dbenassi",
+        "email" : "davide.benassi@example.com",
+        "password" : "PSicura1!" 
+    },
+    {
+        "first_name": "Luca",
+        "last_name": "Rossi",
+        "username": "lrossi",
+        "email": "luca.rossi@example.com",
+        "password": "PSicura1!"
+    },
+    {
+        "first_name": "Giulia",
+        "last_name": "Verdi",
+        "username": "gverdi",
+        "email": "giulia.verdi@example.com",
+        "password": "PSicura1!"
+    },
+    {
+        "first_name": "Matteo",
+        "last_name": "Bianchi",
+        "username": "mbianchi",
+        "email": "matteo.bianchi@example.com",
+        "password": "PSicura1!"
+    }
+]
