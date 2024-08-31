@@ -10,6 +10,10 @@
             {% csrf_token %}
             <button type="submit">Logout</button>
         </form>
+
+    {% else %}
+        <li><a href="{% url 'login' %}">Login</a></li>
+
     {% endif %}
     <ul>
         <li><a href="{% url 'companies_home_page' %}">Trova l'azienda</a></li>

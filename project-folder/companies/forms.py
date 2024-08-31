@@ -10,16 +10,9 @@ class CompanyForm(forms.ModelForm):
         fields = ['name', 'description']
 
 class EmployeeProfileForm(forms.ModelForm):
-
-    company = forms.ModelChoiceField(
-        queryset=Company.objects.all(),
-        widget=forms.Select(),
-        empty_label='Select your company',
-        help_text='Be sure your company is registerd'
-    )
     class Meta:
         model = EmployeeProfile
-        fields = ['company']
+        fields = []
 
 # * Rendered Form to register a new Company and its Admin * #
 class CompanySignupForm(forms.Form):
@@ -54,7 +47,7 @@ class CompanySignupForm(forms.Form):
 
 class EmployeeSignupForm(forms.Form):
     def __init__(self, *args, **kwargs):
-
+        self.company = kwargs.pop('company', None)
         super().__init__(*args, **kwargs)
         self.userForm = UserForm(*args, **kwargs)
         self.employeeProfileForm = EmployeeProfileForm(*args, **kwargs)
@@ -77,6 +70,7 @@ class EmployeeSignupForm(forms.Form):
         # Last, save the employee with the proper user #
         employeeProfile = self.employeeProfileForm.save(commit=False)
         employeeProfile.user = user
+        employeeProfile.company = self.company
         if commit:
             employeeProfile.save()
 
