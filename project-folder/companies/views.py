@@ -4,6 +4,8 @@ from django.urls import reverse_lazy
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.urls import reverse
 from django.core.exceptions import PermissionDenied
+from braces.views import GroupRequiredMixin
+
 
 from .models import Company, EmployeeProfile
 from .forms import CompanySignupForm, EmployeeSignupForm
@@ -25,20 +27,29 @@ def companies_home_page(request):
 def company_page(request, pk):
     company = get_object_or_404(Company, pk=pk)
     return render(request, 'company_page.html', {'company': company})
-
-
-@user_passes_test(is_admin)
-def admin_dashboard(request):
-    company = request.user.related_company
-    employees = EmployeeProfile.objects.filter(company=company)
     
-    employeeSignupForm = EmployeeSignupForm()
+class AdminDashboardView(GroupRequiredMixin, FormView):
+    group_required = ["CompanyAdministrators"]
+    form_class = EmployeeSignupForm
+    template_name = 'admin_dashboard.html'
+    success_url = reverse_lazy('admin-dashboard')
 
-    context = {
-        'employees': employees,
-        'employee_signup_form' : employeeSignupForm
-    }
-    return render(request, 'admin_dashboard.html', context)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        company = self.request.user.related_company
+        employees = EmployeeProfile.objects.filter(company=company)
+        context['employees'] = employees
+        return context
+    
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['company'] = self.request.user.related_company  # Passa la company al form
+        return kwargs
+
+    def form_valid(self, form):
+        form.save()  # Salva i dati dell'employee
+        return super().form_valid(form)
+
 
 @user_passes_test(is_employee)
 def employee_dashboard(request):
@@ -83,6 +94,7 @@ class CompanySignupView(FormView):
         form.save()  # Save data using CompanySignupForm.save()
         return super().form_valid(form)
 
+'''
 class EmployeeSignupView(FormView):
     form_class = EmployeeSignupForm
     template_name = 'employee_signup.html'
@@ -91,3 +103,4 @@ class EmployeeSignupView(FormView):
     def form_valid(self, form):
         form.save()  
         return super().form_valid(form)
+'''
