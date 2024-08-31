@@ -18,8 +18,6 @@ def is_employee(user):
     return user.groups.filter(name='Employees').exists()
 
 
-
-
 def companies_home_page(request):
     companies = Company.objects.all()
     return render(request, 'companies_home_page.html', {'companies': companies})
@@ -55,31 +53,18 @@ class AdminDashboardView(GroupRequiredMixin, FormView):
 def employee_dashboard(request):
     return render(request, 'employee_dashboard.html')
 
-@user_passes_test(is_admin)
-def approve_employee(request, employee_id):
-    employee = get_object_or_404(EmployeeProfile, id=employee_id)
-
-     # Verifica che l'admin sia l'admin della stessa Company
-    if employee.company.admin != request.user:
-        raise PermissionDenied("Non hai i permessi per approvare questo dipendente.")
-    
-    employee.is_approved = True
-    employee.save()
-
-    return redirect(reverse('admin-dashboard?login=ok'))
 
 @user_passes_test(is_admin)
 def remove_employee(request, employee_id):
     employee = get_object_or_404(EmployeeProfile, id=employee_id)
 
     if employee.company.admin != request.user:
-        raise PermissionDenied("Non hai i permessi per approvare questo dipendente.")
-        
-    employee.is_approved = False
-    employee.company = None
-    employee.save()
+        raise PermissionDenied("Non hai i permessi per rimuovere questo dipendente.")
 
-    return redirect(reverse('admin-dashboard?login=ok'))
+    employee.user.delete()    
+    employee.delete()
+
+    return redirect(reverse('admin-dashboard'))
 
 
 
@@ -93,14 +78,3 @@ class CompanySignupView(FormView):
     def form_valid(self, form):
         form.save()  # Save data using CompanySignupForm.save()
         return super().form_valid(form)
-
-'''
-class EmployeeSignupView(FormView):
-    form_class = EmployeeSignupForm
-    template_name = 'employee_signup.html'
-    success_url = reverse_lazy('login')
-
-    def form_valid(self, form):
-        form.save()  
-        return super().form_valid(form)
-'''

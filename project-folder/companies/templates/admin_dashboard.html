@@ -11,7 +11,7 @@
 
 {% block content %}
     <h2>Admin Dashboard</h2>
-    {% if user.is_authenticated and "ok" in request.GET.login %}
+    {% if user.is_authenticated %}
         <p> Utente : {{user.username}}</p>
         <p> Amministratore di : {{user.related_company}}</p>
 
