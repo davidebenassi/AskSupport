@@ -89,7 +89,13 @@ def employee_dashboard(request):
     employee_profile = request.user.employee_profile
     companyTickets = Ticket.objects.filter(company=employee_profile.company)
 
-    return render(request, 'employee_dashboard.html', context={'tickets':tickets})
+    return render(request, 'employee_dashboard.html', context={
+        'open_tickets' : companyTickets.filter(assigned_employee=employee_profile, status=Ticket.OPEN),
+        'pending_tickets' : companyTickets.filter(status=Ticket.PENDING),
+        'closed_tickets' : companyTickets.filter(assigned_employee=employee_profile, status=Ticket.CLOSED),
+        'already_handled_tickets' : companyTickets.filter(status=Ticket.OPEN).exclude(assigned_employee=employee_profile)
+        }
+    )
 
 
 

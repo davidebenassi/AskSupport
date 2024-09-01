@@ -7,30 +7,34 @@
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
                 {% if user.is_authenticated %}
+                    
                     {% if "CompanyAdministrators" in user.groups.all.0.name %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="">{{ user.related_company.name }}</a>
+                        </li>
                         <li class="nav-item">
                             <a class="nav-link" href="">FAQ</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'admin-dashboard' %}">Dashboard</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="">Company Profile</a>
-                        </li>
+                        
                     {% elif "Employees" in user.groups.all.0.name %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="">{{ user.username }}</a>
+                        </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'employee-dashboard' %}"">Dashboard</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="">Profile</a>
-                        </li>
+                        
                     {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="">{{ user.username }}</a>
+                        </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'user-tickets' %}">Tickets</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="">Profile</a>
-                        </li>
+                        
                     {% endif %}
                     <li class="nav-item">
                         <form method="POST" action="{% url 'logout' %}">

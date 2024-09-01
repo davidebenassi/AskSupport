@@ -6,15 +6,44 @@
         <p> Utente : {{user.username}}</p>
         <p> Dipendente di : {{user.employee_profile.company.name}}</p>
         
-       
-        
-        <h2>Tickets</h2>
+
+        <h3>Open Tickets</h3>
         <ul>
-            {% for ticket in tickets %}
+            {% for ticket in open_tickets %}
                 <li>
-                    <p> {{ ticket.title }}- Status: {{ ticket.status }} </p>
+                    {{ ticket.title }} - {{ ticket.description }} 
+                    <br>
+                    Created : {{ ticket.created_at }}
                 </li>
-            {% endfor %}
+            {% endfor %}    
         </ul>
+
+        <h3>Pending Tickets</h3>
+            {% for ticket in pending_tickets %}
+            <li>
+                <p>
+                    {{ ticket.title }} - {{ ticket.description }} 
+                    <br>
+                    Created : {{ ticket.created_at }}
+                </p>
+            </li>
+            {% endfor %}
+
+        <h3>Closed Tickets</h3>
+            {% for ticket in closed_tickets %}
+            <li>
+                {{ ticket.title }} - {{ ticket.description }} 
+                    <br>
+                    Created : {{ ticket.created_at }}
+            </li>
+            {% endfor %}
+        <h3>Already Handled Tickets</h3>
+            {% for ticket in already_handled_tickets %}
+            <li>
+                {{ ticket.title }} - {{ ticket.description }} 
+                    <br>
+                    Created : {{ ticket.created_at }}
+            </li>
+            {% endfor %}
     {% endif %}
 {% endblock %}
