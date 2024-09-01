@@ -6,21 +6,20 @@
     <p>Admin: {{ company.admin.username }}</p>
     <p>Email di contatto: {{ company.admin.email }}</p>
 
-    <!--
+    
     {% if user.is_authenticated %}
         <h3>Open a Support Ticket</h3>
-        <form method="post" action="{% url 'ticket_create' company.id %}">
+        <form method="post">
             {% csrf_token %}
-            {{ ticket_form.as_p }}
+            {{ form.as_p }}
             <button type="submit">Create Ticket</button>
         </form>
     {% else %}
         <p> Signup to open ticket with the company </p>
     {% endif %}
-    -->
+    
 
     <h2> FAQ Session </h2>
+    <p> Under Construction </p>
 
-
-    <a href="{% url 'home' %}">Ritorna alla home</a>
 {% endblock %}

@@ -18,4 +18,5 @@ urlpatterns = [
     
     path('companies/', include('companies.urls')),
     path('users/', include('users.urls')),
+    path('tickets/', include('tickets.urls')),
 ]

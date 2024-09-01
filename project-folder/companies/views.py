@@ -5,11 +5,15 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.urls import reverse
 from django.core.exceptions import PermissionDenied
 from braces.views import GroupRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import DetailView
+from django.views.generic.edit import FormMixin
 
 
 from .models import Company, EmployeeProfile
 from .forms import CompanySignupForm, EmployeeSignupForm
-
+from tickets.forms import TicketForm
+from tickets.models import Ticket
 
 def is_admin(user):
     return user.groups.filter(name='CompanyAdministrators').exists()
@@ -25,7 +29,38 @@ def companies_home_page(request):
 def company_page(request, pk):
     company = get_object_or_404(Company, pk=pk)
     return render(request, 'company_page.html', {'company': company})
-    
+
+
+class CompanyPageView(FormMixin, DetailView):
+    model = Company
+    template_name = 'company_page.html'
+    context_object_name = 'company'
+    form_class = TicketForm
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form'] = self.get_form()
+        return context
+
+    def get_success_url(self):
+        return reverse('company-page', kwargs={'pk': self.object.pk})
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        form = self.get_form()
+        if form.is_valid():
+            return self.form_valid(form)
+        else:
+            return self.form_invalid(form)
+
+    def form_valid(self, form):
+        ticket = form.save(commit=False)
+        ticket.created_by = self.request.user.related_profile
+        ticket.company = self.object
+        ticket.save()
+        return super().form_valid(form)
+
+
 class AdminDashboardView(GroupRequiredMixin, FormView):
     group_required = ["CompanyAdministrators"]
     form_class = EmployeeSignupForm
@@ -51,7 +86,9 @@ class AdminDashboardView(GroupRequiredMixin, FormView):
 
 @user_passes_test(is_employee)
 def employee_dashboard(request):
-    return render(request, 'employee_dashboard.html')
+    employee_profile = request.user.employee_profile
+    tickets = Ticket.objects.filter(company=employee_profile.company)
+    return render(request, 'employee_dashboard.html', context={'tickets':tickets})
 
 
 @user_passes_test(is_admin)

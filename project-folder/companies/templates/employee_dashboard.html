@@ -2,13 +2,19 @@
 
 {% block content %}
     <h2>Employee Dashboard</h2>
-    {% if user.is_authenticated and "ok" in request.GET.login %}
+    {% if user.is_authenticated %}
         <p> Utente : {{user.username}}</p>
         <p> Dipendente di : {{user.employee_profile.company.name}}</p>
         
-        <form method="POST" action="{% url 'logout' %}">
-            {% csrf_token %}
-            <button type="submit" >Logout</button>
-        </form>
+       
+        
+        <h2>Tickets</h2>
+        <ul>
+            {% for ticket in tickets %}
+                <li>
+                    <p> {{ ticket.title }}- Status: {{ ticket.status }} </p>
+                </li>
+            {% endfor %}
+        </ul>
     {% endif %}
 {% endblock %}
