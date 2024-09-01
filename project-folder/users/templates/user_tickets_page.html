@@ -27,8 +27,10 @@
         {% for ticket in closed_tickets %}
         <li>
             {{ ticket.title }} - {{ ticket.description }} 
-                <br>
-                Created : {{ ticket.created_at }}
+            <br>
+            Created : {{ ticket.created_at }}
+            <br>
+            Closed because : {{ ticket.close_reason }}
         </li>
         {% endfor %}
 

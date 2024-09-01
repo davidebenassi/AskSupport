@@ -5,14 +5,24 @@ from users.models import UserProfile
 from companies.models import Company, EmployeeProfile
 
 class Ticket(models.Model):
-    OPEN = 'open'
-    CLOSED = 'closed'
-    PENDING = 'pending'
+    OPEN = 'Open'
+    CLOSED = 'Closed'
+    PENDING = 'Pending'
+
+    REJECTED = 'Rejected'
+    SOLVED = 'Solved'
+    UNSOLVABLE = 'Unsolvable'
 
     STATUS_CHOICES = [
         (OPEN, 'Open'),
         (CLOSED, 'Closed'),
         (PENDING, 'Pending')
+    ]
+
+    CLOSE_REASON_CHOICES = [
+        (REJECTED, 'Rejected'),
+        (SOLVED, 'Solved'),
+        (UNSOLVABLE, 'Unsolvable')
     ]
 
     title = models.CharField(max_length=200)
@@ -23,6 +33,8 @@ class Ticket(models.Model):
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=PENDING)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    #close_reason = models.CharField(max_length=10, choices=CLOSE_REASON_CHOICES, null=True)
+    close_reason = models.TextField(null=True, blank=True)
 
     def __str__(self):
         return f"Ticket #{self.id} - {self.title} ({self.status})"

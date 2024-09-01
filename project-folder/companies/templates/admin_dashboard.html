@@ -31,7 +31,7 @@
                         <td>{{ employee.user.username }}</td>
                         <td>{{ employee.user.email }}</td>
                         <td>
-                            <form method="POST" action="{% url 'remove_employee' employee.id %}">
+                            <form method="POST" action="{% url 'remove-employee' employee.id %}">
                                 {% csrf_token %}
                                 <button type="submit">Rimuovi</button>
                             </form>

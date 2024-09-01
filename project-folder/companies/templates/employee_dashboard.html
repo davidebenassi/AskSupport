@@ -18,16 +18,45 @@
             {% endfor %}    
         </ul>
 
+
         <h3>Pending Tickets</h3>
-            {% for ticket in pending_tickets %}
-            <li>
-                <p>
-                    {{ ticket.title }} - {{ ticket.description }} 
-                    <br>
-                    Created : {{ ticket.created_at }}
-                </p>
-            </li>
-            {% endfor %}
+        <table>
+            <tbody>
+                {% for ticket in pending_tickets %}
+                    <tr>
+                        <td>{{ ticket.title }} </td>
+                        <td>{{ ticket.description }} </td>
+                        <td>
+                            <form method="POST" action="{% url 'accept-ticket' ticket.id %}">
+                                {% csrf_token %}
+                                <button type="submit">Accept</button>
+                            </form>
+                        </td>
+                        <td>
+                            <form id="close-ticket-form" method="POST" action="{% url 'close-ticket' ticket.id %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="close_reason" id="close-reason">
+                                <button type="button" onclick="submitCloseForm('{{ ticket.id }}')">Reject</button>
+                            </form>
+                        </td>
+
+                        <script>
+                            function submitCloseForm(ticketId) {
+                                var reason = prompt("Please enter the reason for rejection:");
+                                if (reason !== null && reason.trim() !== "") {
+                                    // Set the reason in the hidden input field
+                                    document.getElementById('close-reason').value = reason;
+                                    // Submit the form
+                                    document.getElementById('close-ticket-form').submit();
+                                } else {
+                                    alert("You must provide a reason to close the ticket.");
+                                }
+                            }
+                        </script>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
 
         <h3>Closed Tickets</h3>
             {% for ticket in closed_tickets %}
