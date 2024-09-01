@@ -1,11 +1,12 @@
 from django.contrib import admin
 from django.urls import include, path, re_path
 from . import views
+from companies.views import companies_home_page
 
 from django.contrib.auth import views as auth_views
 
 urlpatterns = [
-    re_path(r"^$|^/$|^home/$", views.home, name='home'),
+    re_path(r"^$|^/$|^home/$", companies_home_page, name='home'),   # The companies home page is renderes ad the whole site home #
     path('admin/', admin.site.urls),
 
     # View that let you select what kind of profile you want to create #
