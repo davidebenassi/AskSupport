@@ -6,7 +6,11 @@
     <p>Admin: {{ company.admin.username }}</p>
     <p>Email di contatto: {{ company.admin.email }}</p>
 
-    
+    <h2> FAQ Session </h2>
+    <p> Under Construction </p>
+
+
+
     {% if user.is_authenticated %}
         <h3>Open a Support Ticket</h3>
         <form method="post">
@@ -17,9 +21,5 @@
     {% else %}
         <p> Signup to open ticket with the company </p>
     {% endif %}
-    
-
-    <h2> FAQ Session </h2>
-    <p> Under Construction </p>
 
 {% endblock %}

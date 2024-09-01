@@ -87,8 +87,10 @@ class AdminDashboardView(GroupRequiredMixin, FormView):
 @user_passes_test(is_employee)
 def employee_dashboard(request):
     employee_profile = request.user.employee_profile
-    tickets = Ticket.objects.filter(company=employee_profile.company)
+    companyTickets = Ticket.objects.filter(company=employee_profile.company)
+
     return render(request, 'employee_dashboard.html', context={'tickets':tickets})
+
 
 
 @user_passes_test(is_admin)

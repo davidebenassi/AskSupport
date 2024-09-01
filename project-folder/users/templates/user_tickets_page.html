@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Open Tickets</h2>
+    <ul>
+        {% for ticket in open_tickets %}
+            <li>
+                {{ ticket.title }} - {{ ticket.description }} 
+                <br>
+                Created : {{ ticket.created_at }}
+            </li>
+        {% endfor %}    
+    </ul>
+
+    <h2>Pending Tickets</h2>
+        {% for ticket in pending_tickets %}
+        <li>
+            <p>
+                {{ ticket.title }} - {{ ticket.description }} 
+                <br>
+                Created : {{ ticket.created_at }}
+            </p>
+        </li>
+        {% endfor %}
+
+    <h2>Closed Tickets</h2>
+        {% for ticket in closed_tickets %}
+        <li>
+            {{ ticket.title }} - {{ ticket.description }} 
+                <br>
+                Created : {{ ticket.created_at }}
+        </li>
+        {% endfor %}
+
+{% endblock %}
