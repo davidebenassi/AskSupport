@@ -1,10 +1,32 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1>Aziende Registrate</h1>
-    <ul>
+<div class="container mt-4">
+    <center> <h1 class="mb-4">Companies</h1> </center>
+    <div class="row">
         {% for company in companies %}
-            <li><a href="{% url 'company-page' company.pk %}">{{ company.name }}</a></li>
+        <div class="col-md-4">
+            <div class="card mb-4 shadow-sm">
+                <a href="{% url 'company-page' company.pk %}" class="text-decoration-none text-dark">
+                    <!-- Card Image -->
+                    <img src="{{ company.image.url }}" class="card-img-top" alt="{{ company.name }}" style="height: 200px; object-fit: cover;">
+                    
+                    <!-- Card Body -->
+                    <div class="card-body">
+                        <!-- Company Name -->
+                        <h5 class="card-title">{{ company.name }}</h5>
+                        <!-- Company Description -->
+                        <p class="card-text">{{ company.description|truncatewords:20 }}</p>
+                    </div>
+                </a>
+            </div>
+        </div>
         {% endfor %}
-    </ul>
+    </div>
+</div>
 {% endblock %}
+
+
+
+
+

@@ -7,12 +7,7 @@ class TicketForm(forms.ModelForm):
         fields = ['title', 'description']
         
         widgets = {
-            'title': forms.TextInput(),
-            'description': forms.Textarea(),
+            'title': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control'}),
         }
 
-
-'''
-'title': forms.TextInput(attrs={'class': 'form-control'}),
-'description': forms.Textarea(attrs={'class': 'form-control'}),
-'''
