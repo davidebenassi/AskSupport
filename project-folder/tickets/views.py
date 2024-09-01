@@ -1,8 +1,10 @@
 from django.shortcuts import redirect, get_object_or_404
 from django.urls import reverse
-from .models import Ticket
-from django.contrib.auth.decorators import user_passes_test
+from .models import Ticket, Message
+from django.contrib.auth.decorators import user_passes_test, login_required
 from django.core.exceptions import PermissionDenied
+from django.http import JsonResponse
+
 
 def is_employee(user):
     return user.groups.filter(name='Employees').exists()
@@ -38,3 +40,30 @@ def close_ticket(request, ticket_id):
         ticket.save()
 
     return redirect(reverse('employee-dashboard'))
+
+@login_required
+def get_ticket_messages(request, ticket_id):
+    ticket = get_object_or_404(Ticket, id=ticket_id)
+
+    #(request.user.related_profile != ticket.created_by and )
+    #if request.user.employee_profile.company != ticket.company:
+     #   return JsonResponse({'error': 'Permission denied'}, status=403)
+
+    messages = ticket.get_messages().values('sender__username', 'content', 'timestamp')
+    messages = list(messages)
+    return JsonResponse({'messages': messages})
+
+@login_required
+def send_message(request, ticket_id):
+    ticket = get_object_or_404(Ticket, id=ticket_id)
+
+    #if request.user.userprofile != ticket.created_by and request.user.employee_profile.company != ticket.company:
+    #    return JsonResponse({'error': 'Permission denied'}, status=403)
+
+    if request.method == 'POST':
+        content = request.POST.get('content')
+        if content:
+            Message.objects.create(ticket=ticket, sender=request.user, content=content)
+            return JsonResponse({'success': True})
+
+    return JsonResponse({'success': False})

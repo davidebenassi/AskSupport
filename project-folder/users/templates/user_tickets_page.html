@@ -5,10 +5,85 @@
     <ul>
         {% for ticket in open_tickets %}
             <li>
-                {{ ticket.title }} - {{ ticket.description }} 
+                <a href="#" onclick="openChatModal('{{ ticket.id }}')">{{ ticket.title }} - {{ ticket.description }}</a>
             </li>
-        {% endfor %}    
+        {% endfor %}
     </ul>
+    
+    <!-- Modal Pop-up per la Chat -->
+    <div class="modal fade" id="chatModal" tabindex="-1" aria-labelledby="chatModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="chatModalLabel">Chat for Ticket #<span id="modalTicketId"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="chatMessages" class="chat-messages" style="height: 300px; overflow-y: auto;">
+                        <!-- Messaggi della chat verranno caricati qui -->
+                    </div>
+                    <form id="chatForm" method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="ticket_id" id="chatTicketId">
+                        <div class="input-group mt-3">
+                            <textarea class="form-control" name="content" id="chatMessageContent" rows="2" placeholder="Type your message"></textarea>
+                            <button class="btn btn-primary" type="submit">Send</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function openChatModal(ticketId) {
+            // Imposta l'ID del ticket nel modal
+            document.getElementById('modalTicketId').textContent = ticketId;
+            document.getElementById('chatTicketId').value = ticketId;
+            
+            // Effettua una richiesta AJAX per ottenere i messaggi della chat
+            fetch(`/tickets/${ticketId}/messages/`)
+                .then(response => response.json())
+                .then(data => {
+                    const chatMessages = document.getElementById('chatMessages');
+                    chatMessages.innerHTML = ''; // Resetta i messaggi
+    
+                    // Inserisci i messaggi nel modal
+                    data.messages.forEach(message => {
+                        const messageElement = document.createElement('div');
+                        messageElement.classList.add('chat-message');
+                        messageElement.innerHTML = `<strong>${message.sender}:</strong> ${message.content} <small>${message.timestamp}</small>`;
+                        chatMessages.appendChild(messageElement);
+                    });
+    
+                    // Scrolla alla fine dei messaggi
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+    
+                    // Apri il modal
+                    const chatModal = new bootstrap.Modal(document.getElementById('chatModal'));
+                    chatModal.show();
+                });
+        }
+    
+        // Gestisce l'invio del messaggio
+        document.getElementById('chatForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(this);
+            
+            fetch(`/tickets/${formData.get('ticket_id')}/send_message/`, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    openChatModal(formData.get('ticket_id'));  // Ricarica i messaggi
+                    document.getElementById('chatMessageContent').value = '';  // Resetta il campo messaggio
+                }
+            });
+        });
+    </script>
 
     <h2>Pending Tickets</h2>
     <ul>
