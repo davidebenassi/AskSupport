@@ -58,7 +58,7 @@
                         data.messages.forEach(message => {
                             const messageElement = document.createElement('div');
                             messageElement.classList.add('chat-message');
-                            messageElement.innerHTML = `<strong>${message.sender}:</strong> ${message.content} <small>${message.timestamp}</small>`;
+                            messageElement.innerHTML = `<strong>${message.sender__username}:</strong> ${message.content} <small>${message.timestamp}</small>`;
                             chatMessages.appendChild(messageElement);
                         });
         

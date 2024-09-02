@@ -48,4 +48,4 @@ class Message(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Message by {self.sender.user.username} on Ticket #{self.ticket.id} - {self.timestamp}"
+        return f"Message by {self.sender.username} on Ticket #{self.ticket.id} - {self.timestamp}"
