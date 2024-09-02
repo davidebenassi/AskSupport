@@ -58,24 +58,40 @@ class CompanyPageView(FormMixin, DetailView):
         ticket.company = self.object
         ticket.save()
         return super().form_valid(form)
-
-class AdminDashboardView(GroupRequiredMixin, FormView):
-    group_required = ["CompanyAdministrators"]
-    form_class = EmployeeSignupForm
+    
+class AdminDashboardView(LoginRequiredMixin, FormMixin, DetailView):
+    model = Company
     template_name = 'admin_dashboard.html'
-    success_url = reverse_lazy('admin-dashboard')
+    context_object_name = 'company'
+    form_class = EmployeeSignupForm
+
+    def get_object(self):
+        # Restituisci l'azienda associata all'utente corrente
+        return self.request.user.related_company
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        company = self.request.user.related_company
+        company = self.get_object()  # Recupera l'oggetto Company
         employees = EmployeeProfile.objects.filter(company=company)
         context['employees'] = employees
+        context['form'] = self.get_form()  # Aggiungi il form al contesto
         return context
-    
+
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
-        kwargs['company'] = self.request.user.related_company  # Passa la company al form
+        kwargs['company'] = self.get_object()  # Passa l'azienda al form
         return kwargs
+
+    def get_success_url(self):
+        return reverse_lazy('admin-dashboard')
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()  # Imposta l'oggetto Company
+        form = self.get_form()
+        if form.is_valid():
+            return self.form_valid(form)
+        else:
+            return self.form_invalid(form)
 
     def form_valid(self, form):
         form.save()  # Salva i dati dell'employee
