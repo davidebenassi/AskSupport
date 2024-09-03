@@ -46,7 +46,7 @@ def get_ticket_messages(request, ticket_id):
     ticket = get_object_or_404(Ticket, id=ticket_id)
 
     # * Check if the message sender is the creator or the assigned employee * #
-    if hasattr(request.user, 'related_rofile') and request.user.related_rofile == ticket.created_by:
+    if hasattr(request.user, 'related_profile') and request.user.related_profile == ticket.created_by:
         is_authorized = True
     elif hasattr(request.user, 'employee_profile') and request.user.employee_profile == ticket.assigned_employee:
         is_authorized = True
@@ -66,7 +66,7 @@ def send_message(request, ticket_id):
 
 
     # * Check if the message sender is the creator or the assigned employee * #
-    if hasattr(request.user, 'related_rofile') and request.user.related_rofile == ticket.created_by:
+    if hasattr(request.user, 'related_profile') and request.user.related_profile == ticket.created_by:
         is_authorized = True
     elif hasattr(request.user, 'employee_profile') and request.user.employee_profile == ticket.assigned_employee:
         is_authorized = True
