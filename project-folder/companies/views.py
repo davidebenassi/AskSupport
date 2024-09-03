@@ -57,7 +57,8 @@ class CompanyPageView(FormMixin, DetailView):
         ticket.save()
         return super().form_valid(form)
     
-class AdminDashboardView(LoginRequiredMixin, FormMixin, DetailView):
+class AdminDashboardView(GroupRequiredMixin, FormMixin, DetailView):
+    group_required = ['CompanyAdministrators']
     model = Company
     template_name = 'admin_dashboard.html'
     context_object_name = 'company'
@@ -100,7 +101,7 @@ def remove_employee(request, employee_id):
     employee = get_object_or_404(EmployeeProfile, id=employee_id)
 
     if employee.company.admin != request.user:
-        raise PermissionDenied("Non hai i permessi per rimuovere questo dipendente.")
+        raise PermissionDenied("You don't have permissions to remove this employee.")
 
     employee.user.delete()    
     employee.delete()
