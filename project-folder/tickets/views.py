@@ -45,9 +45,16 @@ def close_ticket(request, ticket_id):
 def get_ticket_messages(request, ticket_id):
     ticket = get_object_or_404(Ticket, id=ticket_id)
 
-    #(request.user.related_profile != ticket.created_by and )
-    #if request.user.employee_profile.company != ticket.company:
-     #   return JsonResponse({'error': 'Permission denied'}, status=403)
+    # * Check if the message sender is the creator or the assigned employee * #
+    if hasattr(request.user, 'related_rofile') and request.user.related_rofile == ticket.created_by:
+        is_authorized = True
+    elif hasattr(request.user, 'employee_profile') and request.user.employee_profile == ticket.assigned_employee:
+        is_authorized = True
+    else:
+        is_authorized = False
+
+    if not is_authorized:
+        return JsonResponse({'error': 'Permission denied'}, status=403)
 
     messages = ticket.get_messages().values('sender__username', 'content', 'timestamp')
     messages = list(messages)
@@ -57,8 +64,17 @@ def get_ticket_messages(request, ticket_id):
 def send_message(request, ticket_id):
     ticket = get_object_or_404(Ticket, id=ticket_id)
 
-    #if request.user.userprofile != ticket.created_by and request.user.employee_profile.company != ticket.company:
-    #    return JsonResponse({'error': 'Permission denied'}, status=403)
+
+    # * Check if the message sender is the creator or the assigned employee * #
+    if hasattr(request.user, 'related_rofile') and request.user.related_rofile == ticket.created_by:
+        is_authorized = True
+    elif hasattr(request.user, 'employee_profile') and request.user.employee_profile == ticket.assigned_employee:
+        is_authorized = True
+    else:
+        is_authorized = False
+
+    if not is_authorized:
+        return JsonResponse({'error': 'Permission denied'}, status=403)
 
     if request.method == 'POST':
         content = request.POST.get('content')
