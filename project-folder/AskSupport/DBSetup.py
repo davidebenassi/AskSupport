@@ -1,7 +1,7 @@
 from companies.models import Company, EmployeeProfile
 from tickets.models import Ticket, Message
 from users.models import UserProfile
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from AskSupport.settings import STATICFILES_DIRS
 import os
 import json
@@ -71,4 +71,24 @@ def initDB():
         userProfile = UserProfile()
         userProfile.user = user
         userProfile.save()
+
+    ## Crea azienda 1 #
+    # Admin
+    admin = User.objects.create_user(
+            username = 'adminazienda',
+            password = 'PSicura1!',
+            email = 'admin@azienda.it',
+            first_name = 'Luca',
+            last_name = 'Valori'
+        )
+    Group.objects.get(name='CompanyAdministrators').user_set.add(admin)
+    admin.save()
+    # Company
+    c = Company()
+    c.name = 'Azienda 1'
+    c.description = "Azienda tech"
+    c.admin = admin
+    c.save()
+
+
         

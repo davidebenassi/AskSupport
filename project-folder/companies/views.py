@@ -22,14 +22,13 @@ def is_employee(user):
     return user.groups.filter(name='Employees').exists()
 
 
+
+
+# * --- COMPANIES & ADMIN --- * #
+
 def companies_home_page(request):
     companies = Company.objects.all()
     return render(request, 'companies_home_page.html', {'companies': companies})
-
-def company_page(request, pk):
-    company = get_object_or_404(Company, pk=pk)
-    return render(request, 'company_page.html', {'company': company})
-
 
 class CompanyPageView(FormMixin, DetailView):
     model = Company
@@ -59,45 +58,44 @@ class CompanyPageView(FormMixin, DetailView):
         ticket.company = self.object
         ticket.save()
         return super().form_valid(form)
-
-
-class AdminDashboardView(GroupRequiredMixin, FormView):
-    group_required = ["CompanyAdministrators"]
-    form_class = EmployeeSignupForm
+    
+class AdminDashboardView(LoginRequiredMixin, FormMixin, DetailView):
+    model = Company
     template_name = 'admin_dashboard.html'
-    success_url = reverse_lazy('admin-dashboard')
+    context_object_name = 'company'
+    form_class = EmployeeSignupForm
+
+    def get_object(self):
+        # Restituisci l'azienda associata all'utente corrente
+        return self.request.user.related_company
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        company = self.request.user.related_company
+        company = self.get_object()  # Recupera l'oggetto Company
         employees = EmployeeProfile.objects.filter(company=company)
         context['employees'] = employees
+        context['form'] = self.get_form()  # Aggiungi il form al contesto
         return context
-    
+
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
-        kwargs['company'] = self.request.user.related_company  # Passa la company al form
+        kwargs['company'] = self.get_object()  # Passa l'azienda al form
         return kwargs
+
+    def get_success_url(self):
+        return reverse_lazy('admin-dashboard')
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()  # Imposta l'oggetto Company
+        form = self.get_form()
+        if form.is_valid():
+            return self.form_valid(form)
+        else:
+            return self.form_invalid(form)
 
     def form_valid(self, form):
         form.save()  # Salva i dati dell'employee
         return super().form_valid(form)
-
-
-@user_passes_test(is_employee)
-def employee_dashboard(request):
-    employee_profile = request.user.employee_profile
-    companyTickets = Ticket.objects.filter(company=employee_profile.company)
-
-    return render(request, 'employee_dashboard.html', context={
-        'open_tickets' : companyTickets.filter(assigned_employee=employee_profile, status=Ticket.OPEN),
-        'pending_tickets' : companyTickets.filter(status=Ticket.PENDING),
-        'closed_tickets' : companyTickets.filter(assigned_employee=employee_profile, status=Ticket.CLOSED),
-        'already_handled_tickets' : companyTickets.filter(status=Ticket.OPEN).exclude(assigned_employee=employee_profile)
-        }
-    )
-
-
 
 @user_passes_test(is_admin)
 def remove_employee(request, employee_id):
@@ -112,8 +110,23 @@ def remove_employee(request, employee_id):
     return redirect(reverse('admin-dashboard'))
 
 
+# * --- EMPLOYEES --- * #
 
-# * --- Form Views --- * #
+@user_passes_test(is_employee)
+def employee_dashboard(request):
+    employee_profile = request.user.employee_profile
+    companyTickets = Ticket.objects.filter(company=employee_profile.company)
+
+    return render(request, 'employee_dashboard.html', context={
+        'open_tickets' : companyTickets.filter(assigned_employee=employee_profile, status=Ticket.OPEN).order_by('-priority'),
+        'pending_tickets' : companyTickets.filter(status=Ticket.PENDING).order_by('-priority'),
+        'closed_tickets' : companyTickets.filter(assigned_employee=employee_profile, status=Ticket.CLOSED),
+        'already_handled_tickets' : companyTickets.filter(status=Ticket.OPEN).exclude(assigned_employee=employee_profile)
+        }
+    )
+
+
+# * --- FORM VIEWS --- * #
 # Using FormView instead of CreateView to handle the compbinated CompanySignupForm (it contains 2 forms) #
 class CompanySignupView(FormView):
     form_class = CompanySignupForm

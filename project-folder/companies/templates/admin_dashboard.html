@@ -31,7 +31,7 @@
                         <td>{{ employee.user.username }}</td>
                         <td>{{ employee.user.email }}</td>
                         <td>
-                            <form method="POST" action="{% url 'remove_employee' employee.id %}">
+                            <form method="POST" action="{% url 'remove-employee' employee.id %}">
                                 {% csrf_token %}
                                 <button type="submit">Rimuovi</button>
                             </form>
@@ -45,12 +45,7 @@
         <form method="POST">
             {% csrf_token %}
             {{ form.userForm.as_p }}
-            <button type="submit">Signup</button>
-        </form>
-
-        <form method="POST" action="{% url 'logout' %}">
-            {% csrf_token %}
-            <button type="submit" >Logout</button>
+            <button type="submit">Register</button>
         </form>
     {% endif %}
 {% endblock %}

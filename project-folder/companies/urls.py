@@ -7,7 +7,7 @@ urlpatterns = [
     
 
     path('admin-dashboard/', AdminDashboardView.as_view(), name='admin-dashboard'),
-    path('remove-employee/<int:employee_id>/', remove_employee, name='remove_employee'),
+    path('remove-employee/<int:employee_id>/', remove_employee, name='remove-employee'),
     
     path('employee-dashboard/', employee_dashboard, name='employee-dashboard')
 ]
