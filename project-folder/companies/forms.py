@@ -8,7 +8,11 @@ class CompanyForm(forms.ModelForm):
     class Meta:
         model = Company
         fields = ['name', 'description']
-
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
+        }
+        
 class EmployeeProfileForm(forms.ModelForm):
     class Meta:
         model = EmployeeProfile
