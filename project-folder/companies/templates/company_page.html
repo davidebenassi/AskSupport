@@ -11,7 +11,7 @@
 
 
 
-    {% if user.is_authenticated %}
+    {% if user.is_authenticated and not "CompanyAdministrators" in user.groups.all.0.name and not "Employees" in user.groups.all.0.name %}
         <h3>Open a Support Ticket</h3>
         <form method="post">
             {% csrf_token %}
@@ -19,7 +19,7 @@
             <button type="submit">Create Ticket</button>
         </form>
     {% else %}
-        <p> Signup to open ticket with the company </p>
+        <p> Signup as "User" to open support ticket with the company </p>
     {% endif %}
 
 {% endblock %}

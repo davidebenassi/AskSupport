@@ -45,12 +45,7 @@
         <form method="POST">
             {% csrf_token %}
             {{ form.userForm.as_p }}
-            <button type="submit">Signup</button>
-        </form>
-
-        <form method="POST" action="{% url 'logout' %}">
-            {% csrf_token %}
-            <button type="submit" >Logout</button>
+            <button type="submit">Register</button>
         </form>
     {% endif %}
 {% endblock %}
