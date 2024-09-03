@@ -8,7 +8,7 @@ from braces.views import GroupRequiredMixin
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import DetailView
 from django.views.generic.edit import FormMixin
-
+from django.contrib.auth import login
 
 from .models import Company, EmployeeProfile
 from .forms import CompanySignupForm, EmployeeSignupForm
@@ -129,8 +129,9 @@ def employee_dashboard(request):
 class CompanySignupView(FormView):
     form_class = CompanySignupForm
     template_name = 'company_signup.html'
-    success_url = reverse_lazy('login')
+    success_url = reverse_lazy('admin-dashboard')
 
     def form_valid(self, form):
-        form.save()  # Save data using CompanySignupForm.save()
+        admin, _ = form.save()
+        login(self.request, admin)
         return super().form_valid(form)

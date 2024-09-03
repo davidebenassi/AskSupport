@@ -1,13 +1,11 @@
-from django.views import View
 from .forms import *
-from django.views.generic import FormView
 from django.urls import reverse_lazy
+from django.views import View
+from django.views.generic import FormView, DetailView
 from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate, logout, login
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import authenticate, logout, update_session_auth_hash
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import DetailView
-from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.views import PasswordChangeView
 
 from tickets.models import Ticket 
@@ -16,10 +14,11 @@ from .models import UserProfile
 class UserSignupView(FormView):
     form_class = UserSignupForm
     template_name = 'user_signup.html'
-    success_url = reverse_lazy('login')
+    success_url = reverse_lazy('home')
 
     def form_valid(self, form):
-        form.save()
+        user, _ = form.save()
+        login(self.request, user)
         return super().form_valid(form)
     
 @login_required
