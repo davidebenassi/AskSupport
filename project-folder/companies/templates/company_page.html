@@ -34,7 +34,7 @@
             <button type="submit">Create Ticket</button>
         </form>
     {% else %}
-        <p> Signup as "User" to open support ticket with the company </p>
+        <p> <a href="{% url 'user-signup' %}"> Singup </a> as "User" if ypu need to open a support ticket with the company </p>
     {% endif %}
 
 {% endblock %}
