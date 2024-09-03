@@ -9,20 +9,22 @@ class Ticket(models.Model):
     CLOSED = 'Closed'
     PENDING = 'Pending'
 
-    REJECTED = 'Rejected'
-    SOLVED = 'Solved'
-    UNSOLVABLE = 'Unsolvable'
-
     STATUS_CHOICES = [
         (OPEN, 'Open'),
         (CLOSED, 'Closed'),
         (PENDING, 'Pending')
     ]
 
-    CLOSE_REASON_CHOICES = [
-        (REJECTED, 'Rejected'),
-        (SOLVED, 'Solved'),
-        (UNSOLVABLE, 'Unsolvable')
+    NONE = 0
+    MEDIUM = 1
+    HIGH = 2
+    CRITIC = 3
+
+    PRIORITY = [
+        (NONE, 'None'),
+        (MEDIUM, 'Medium'),
+        (HIGH, 'High'),
+        (CRITIC, 'Critic')
     ]
 
     title = models.CharField(max_length=200)
@@ -34,6 +36,7 @@ class Ticket(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     close_reason = models.TextField(null=True, blank=True)
+    priority = models.CharField(max_length=10, choices=PRIORITY, default=NONE)
 
     def __str__(self):
         return f"Ticket #{self.id} - {self.title} ({self.status})"
