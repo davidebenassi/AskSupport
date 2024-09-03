@@ -11,7 +11,7 @@
         <ul>
             {% for ticket in open_tickets %}
                 <li>
-                    <a href="#" onclick="openChatModal('{{ ticket.id }}')">{{ ticket.title }} - {{ ticket.description }}</a>
+                    <a href="#" onclick="openChatModal('{{ ticket.id }}')">{{ ticket.title }} - {{ ticket.description|truncatewords:20  }} | {{ ticket.get_priority }}</a>
                 </li>
             {% endfor %}
         </ul>
@@ -133,6 +133,7 @@
                     <tr>
                         <td>{{ ticket.title }} </td>
                         <td>{{ ticket.description }} </td>
+                        <td>{{ ticket.get_priority }}</td>
                         <td>
                             <form method="POST" action="{% url 'accept-ticket' ticket.id %}">
                                 {% csrf_token %}
