@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic import FormView, DetailView
 from django.urls import reverse_lazy, reverse
-from django.contrib.auth.decorators import user_passes_test
+from django.contrib.auth.decorators import user_passes_test, login_required
 from django.core.exceptions import PermissionDenied
 from braces.views import GroupRequiredMixin
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -12,8 +12,10 @@ from .models import Company, EmployeeProfile
 from .forms import CompanySignupForm, EmployeeSignupForm, CompanyForm
 from tickets.forms import TicketForm
 from tickets.models import Ticket
+from faq.models import FAQ
 from users.forms import ConfirmPasswordForm, EditUserForm
 from django.contrib.auth.views import PasswordChangeView
+from faq.forms import FAQCreateForm
 
 def is_admin(user):
     return user.groups.filter(name='CompanyAdministrators').exists()
@@ -36,6 +38,8 @@ class CompanyPageView(FormMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        company = self.get_object()
+        context['faqs'] = company.faqs.all().filter(approved=True)
         context['form'] = self.get_form()
         return context
 
@@ -116,11 +120,31 @@ def employee_dashboard(request):
     employee_profile = request.user.employee_profile
     companyTickets = Ticket.objects.filter(company=employee_profile.company)
 
+    company = employee_profile.company
+    faqs = company.faqs.all()
+    notApprovedFaqs = faqs.filter(approved=False)
+    approvedFaqs = faqs.filter(approved=True)
+
+    if request.method == 'POST':
+        form = FAQCreateForm(request.POST)
+        if form.is_valid():
+            faq = form.save(commit=False)
+            faq.company = company
+
+            faq.approved = False
+            faq.save()
+            return redirect('employee-dashboard')
+    else:
+        form = FAQCreateForm()
+
     return render(request, 'employee_dashboard.html', context={
         'open_tickets' : companyTickets.filter(assigned_employee=employee_profile, status=Ticket.OPEN).order_by('-priority'),
         'pending_tickets' : companyTickets.filter(status=Ticket.PENDING).order_by('-priority'),
         'closed_tickets' : companyTickets.filter(assigned_employee=employee_profile, status=Ticket.CLOSED),
-        'already_handled_tickets' : companyTickets.filter(status=Ticket.OPEN).exclude(assigned_employee=employee_profile)
+        'already_handled_tickets' : companyTickets.filter(status=Ticket.OPEN).exclude(assigned_employee=employee_profile),
+        'form': form,
+        'notApprovedFaqs': notApprovedFaqs,
+        'approvedFaqs': approvedFaqs
         }
     )
 
@@ -168,7 +192,6 @@ class DeleteCompanyView(FormView):
             form.add_error('password', 'Incorrect password.')
             return self.form_invalid(form)
         
-
 class UpdateCompanyProfileView(View):
     template_name = 'update_company_profile.html'
     success_url = reverse_lazy('company-profile')
@@ -193,3 +216,46 @@ class UpdateCompanyProfileView(View):
             company_form.save()
 
         return redirect(self.success_url)
+    
+# * --- FAQ --- * #
+
+@user_passes_test(is_admin)
+def delete_faq(request, faq_id):
+    faq = get_object_or_404(FAQ, id=faq_id, company=request.user.related_company)
+
+    if request.method == "POST":
+        faq.delete()
+        return redirect('company-faq')
+
+    return redirect('company-faq')
+
+@user_passes_test(is_admin)
+def approve_faq(request, faq_id):
+    faq = get_object_or_404(FAQ, id=faq_id, company=request.user.related_company)
+
+    if request.method == "POST":
+        faq.approved = True
+        faq.save()
+        return redirect('company-faq')
+
+    return redirect('company-faq')
+
+@user_passes_test(is_admin)
+def company_faq_view(request):
+    company = request.user.related_company
+    faqs = company.faqs.all()
+    notApprovedFaqs = faqs.filter(approved=False)
+    approvedFaqs = faqs.filter(approved=True)
+
+    if request.method == 'POST':
+        form = FAQCreateForm(request.POST)
+        if form.is_valid():
+            faq = form.save(commit=False)
+            faq.company = company
+            faq.approved = True  
+            faq.save()
+            return redirect('company-faq')
+    else:
+        form = FAQCreateForm()
+
+    return render(request, 'company_faq.html', {'company': company, 'notApprovedFaqs': notApprovedFaqs, 'approvedFaqs' : approvedFaqs, 'form': form})
