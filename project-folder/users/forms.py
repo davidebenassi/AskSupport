@@ -27,13 +27,13 @@ class UserProfileForm(forms.ModelForm):
         }
 
 # * Update Profile * #
-class EditUserProfileForm(UserChangeForm):
+class EditUserForm(UserChangeForm):
     class Meta:
         model = User
         fields = ['first_name', 'last_name', 'email']
     
     def __init__(self, *args, **kwargs):
-        super(EditUserProfileForm, self).__init__(*args, **kwargs)
+        super(EditUserForm, self).__init__(*args, **kwargs)
         self.fields.pop('password', None)
 
 

@@ -38,7 +38,6 @@ class UserProfileView(LoginRequiredMixin, DetailView):
     template_name = 'user_profile.html'
     
     def get_object(self):
-        # Restituisce il profilo dell'utente loggato
         return self.request.user.related_profile
 
 class UpdateUserProfileView(LoginRequiredMixin, View):
@@ -46,7 +45,7 @@ class UpdateUserProfileView(LoginRequiredMixin, View):
     success_url = reverse_lazy('user-profile')
 
     def get(self, request, *args, **kwargs):
-        user_form = EditUserProfileForm(instance=request.user)
+        user_form = EditUserForm(instance=request.user)
         profile_form = UserProfileForm(instance=request.user.related_profile)
 
         return render(request, self.template_name, {
@@ -55,7 +54,7 @@ class UpdateUserProfileView(LoginRequiredMixin, View):
         })
 
     def post(self, request, *args, **kwargs):
-        user_form = EditUserProfileForm(request.POST, instance=request.user)
+        user_form = EditUserForm(request.POST, instance=request.user)
         profile_form = UserProfileForm(request.POST, request.FILES, instance=request.user.related_profile)
 
         if user_form.is_valid():
@@ -66,22 +65,22 @@ class UpdateUserProfileView(LoginRequiredMixin, View):
 
         return redirect(self.success_url)
 
-class CustomPasswordChangeView(LoginRequiredMixin, PasswordChangeView):
+class UserPasswordChangeView(LoginRequiredMixin, PasswordChangeView):
     template_name = 'change_password.html'
     success_url = reverse_lazy('user-profile')
 
 class DeleteProfileView(LoginRequiredMixin, FormView):
-    template_name = 'delete_profile_confirmation.html'
+    template_name = 'delete_confirmation.html'
     form_class = ConfirmPasswordForm
-    success_url = reverse_lazy('home')  # O un'altra pagina dopo la cancellazione
+    success_url = reverse_lazy('home')  
 
     def form_valid(self, form):
         password = form.cleaned_data['password']
         user = authenticate(username=self.request.user.username, password=password)
 
         if user is not None:
-            user.delete()  # Elimina User e il suo UserProfile correlato
-            logout(self.request)  # Disconnetti l'utente dopo l'eliminazione
+            user.delete()  
+            logout(self.request)  
             return super().form_valid(form)
         else:
             form.add_error('password', 'Incorrect password.')
