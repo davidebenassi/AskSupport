@@ -16,17 +16,14 @@ class UserForm(UserCreationForm):
 
 class UserProfileForm(forms.ModelForm):
 
-    profilePicture = forms.ImageField(
-        required=False,
-        widget=forms.FileInput(),
-        help_text='Upload a profile picture (optional)'
-    )
-
     class Meta:
         model = UserProfile
         fields = ['profilePicture']
         labels = {
             'profilePicture' : 'Profile Picture'
+        }
+        widgets = {
+            'profilePicture' : forms.FileInput(attrs={'class': 'form-control'})
         }
 
 # * Update Profile * #
