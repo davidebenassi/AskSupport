@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>FAQs for {{ company.name }}</h2>
+
+    <div class="mb-4">
+        <h4>Create a New FAQ</h4>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-success">Create FAQ</button>
+        </form>
+    </div>
+
+    <h4>Created FAQ</h4>
+    <div class="accordion" id="faqAccordion">
+        {% for faq in faqs %}
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="heading{{ faq.id }}">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ faq.id }}" aria-expanded="false" aria-controls="collapse{{ faq.id }}">
+                    <strong> {{ faq.question }} </strong>
+                </button>
+            </h2>
+            <div id="collapse{{ faq.id }}" class="accordion-collapse collapse" aria-labelledby="heading{{ faq.id }}" data-bs-parent="#faqAccordion">
+                <div class="accordion-body">
+                    {{ faq.answer }}
+
+                    <form method="post" action="{% url 'delete-faq' faq.id %}" class="mt-3">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">Delete FAQ</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

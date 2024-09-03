@@ -8,6 +8,9 @@ urlpatterns = [
     path('profile/edit/', UpdateCompanyProfileView.as_view(), name='edit-company'),
     path('profile/delete/', DeleteCompanyView.as_view(), name='delete-company'),
     path('profile/change-password/', CompanyAdminPasswordChangeView.as_view(), name='change-admin-password'),
+    
+    path('faq/', company_faq_view, name='company-faq'),
+    path('faq/delete/<int:faq_id>/', delete_faq, name='delete-faq'),
 
     path('admin-dashboard/', AdminDashboardView.as_view(), name='admin-dashboard'),
     path('remove-employee/<int:employee_id>/', remove_employee, name='remove-employee'),
