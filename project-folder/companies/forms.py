@@ -5,12 +5,15 @@ from .models import Company, EmployeeProfile
 from users.forms import UserForm 
 
 class CompanyForm(forms.ModelForm):
+
+
     class Meta:
         model = Company
-        fields = ['name', 'description']
+        fields = ['name', 'description', 'companyLogo']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
+            'companyLogo' : forms.FileInput(attrs={'class': 'form-control'})
         }
         
 class EmployeeProfileForm(forms.ModelForm):

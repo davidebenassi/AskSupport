@@ -6,6 +6,13 @@ class Company(models.Model):
     description = models.TextField()
     admin = models.OneToOneField(User, on_delete=models.CASCADE, related_name='related_company')
 
+    companyLogo = models.ImageField(
+        upload_to='images/companies_logos/',
+        default='images/default/blank_company_logo.png',
+        blank=True      # Optional field 
+    )
+
+
     def __str__(self):
         return self.name
 
