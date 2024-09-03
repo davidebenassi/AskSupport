@@ -22,8 +22,6 @@ def is_employee(user):
     return user.groups.filter(name='Employees').exists()
 
 
-
-
 # * --- COMPANIES & ADMIN --- * #
 
 def companies_home_page(request):

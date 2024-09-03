@@ -3,7 +3,7 @@ from .views import *
 
 urlpatterns = [
     path('<int:pk>/', CompanyPageView.as_view(), name='company-page'),
-    path('company-signup/', CompanySignupView.as_view(), name='company_signup'),
+    path('company-signup/', CompanySignupView.as_view(), name='company-signup'),
     
 
     path('admin-dashboard/', AdminDashboardView.as_view(), name='admin-dashboard'),
