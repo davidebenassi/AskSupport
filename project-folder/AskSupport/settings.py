@@ -122,6 +122,9 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static/')]
 
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
+
 # LOGIN_REDIRECT_URL = "/?login=ok"   # redireziona alla home, ma con un parametro GET
 LOGIN_URL = "/login/?auth=notok"    # redireziona al login, ma con un parametro GET
 

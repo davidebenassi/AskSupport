@@ -27,10 +27,14 @@ def accept_ticket(request, ticket_id):
 def close_ticket(request, ticket_id):
     ticket = get_object_or_404(Ticket, id=ticket_id)
 
-    if request.user.employee_profile.company != ticket.company:
-        raise PermissionDenied("You don't have permissions to manage this ticket.")
+    if ticket.status == ticket.PENDING:
+        if request.user.employee_profile.company != ticket.company:
+            raise PermissionDenied("You don't have permissions to manage this ticket.")
+    if ticket.status == ticket.OPEN:
+        # * Avoid employees from closing tickets from other employees of the same company * #
+        if request.user.employee_profile != ticket.assigned_employee:
+            raise PermissionDenied("You don't have permissions to manage this ticket.")
 
-    
     if request.method == "POST":
         close_reason = request.POST.get('close_reason')
     
@@ -46,9 +50,10 @@ def get_ticket_messages(request, ticket_id):
     ticket = get_object_or_404(Ticket, id=ticket_id)
 
     # * Check if the message sender is the creator or the assigned employee * #
-    if hasattr(request.user, 'related_rofile') and request.user.related_rofile == ticket.created_by:
+    if hasattr(request.user, 'related_profile') and request.user.related_profile == ticket.created_by:
         is_authorized = True
-    elif hasattr(request.user, 'employee_profile') and request.user.employee_profile == ticket.assigned_employee:
+    # * All employees of a company are authorized to read messages of all tickets of the company * #
+    elif hasattr(request.user, 'employee_profile') and request.user.employee_profile.company == ticket.company:
         is_authorized = True
     else:
         is_authorized = False
@@ -64,9 +69,8 @@ def get_ticket_messages(request, ticket_id):
 def send_message(request, ticket_id):
     ticket = get_object_or_404(Ticket, id=ticket_id)
 
-
     # * Check if the message sender is the creator or the assigned employee * #
-    if hasattr(request.user, 'related_rofile') and request.user.related_rofile == ticket.created_by:
+    if hasattr(request.user, 'related_profile') and request.user.related_profile == ticket.created_by:
         is_authorized = True
     elif hasattr(request.user, 'employee_profile') and request.user.employee_profile == ticket.assigned_employee:
         is_authorized = True

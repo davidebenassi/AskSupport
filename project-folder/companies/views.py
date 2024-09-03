@@ -1,27 +1,25 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.views.generic import FormView
-from django.urls import reverse_lazy
-from django.contrib.auth.decorators import login_required, user_passes_test
-from django.urls import reverse
+from django.views.generic import FormView, DetailView
+from django.urls import reverse_lazy, reverse
+from django.contrib.auth.decorators import user_passes_test
 from django.core.exceptions import PermissionDenied
 from braces.views import GroupRequiredMixin
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import DetailView
 from django.views.generic.edit import FormMixin
-
-
+from django.contrib.auth import login, authenticate, logout
+from django.views import View
 from .models import Company, EmployeeProfile
-from .forms import CompanySignupForm, EmployeeSignupForm
+from .forms import CompanySignupForm, EmployeeSignupForm, CompanyForm
 from tickets.forms import TicketForm
 from tickets.models import Ticket
+from users.forms import ConfirmPasswordForm, EditUserForm
+from django.contrib.auth.views import PasswordChangeView
 
 def is_admin(user):
     return user.groups.filter(name='CompanyAdministrators').exists()
 
 def is_employee(user):
     return user.groups.filter(name='Employees').exists()
-
-
 
 
 # * --- COMPANIES & ADMIN --- * #
@@ -59,7 +57,8 @@ class CompanyPageView(FormMixin, DetailView):
         ticket.save()
         return super().form_valid(form)
     
-class AdminDashboardView(LoginRequiredMixin, FormMixin, DetailView):
+class AdminDashboardView(GroupRequiredMixin, FormMixin, DetailView):
+    group_required = ['CompanyAdministrators']
     model = Company
     template_name = 'admin_dashboard.html'
     context_object_name = 'company'
@@ -102,7 +101,7 @@ def remove_employee(request, employee_id):
     employee = get_object_or_404(EmployeeProfile, id=employee_id)
 
     if employee.company.admin != request.user:
-        raise PermissionDenied("Non hai i permessi per rimuovere questo dipendente.")
+        raise PermissionDenied("You don't have permissions to remove this employee.")
 
     employee.user.delete()    
     employee.delete()
@@ -131,8 +130,66 @@ def employee_dashboard(request):
 class CompanySignupView(FormView):
     form_class = CompanySignupForm
     template_name = 'company_signup.html'
-    success_url = reverse_lazy('login')
+    success_url = reverse_lazy('admin-dashboard')
 
     def form_valid(self, form):
-        form.save()  # Save data using CompanySignupForm.save()
+        admin, _ = form.save()
+        login(self.request, admin)
         return super().form_valid(form)
+
+
+# * --- COMPANY UPDATE --- * #
+class CompanyAdminPasswordChangeView(LoginRequiredMixin, PasswordChangeView):
+    template_name = 'change_password.html'
+    success_url = reverse_lazy('company-profile')
+
+class CompanyProfileView(DetailView):
+    model = Company
+    template_name = 'company_profile.html'
+
+    def get_object(self):
+        return self.request.user.related_company
+    
+
+class DeleteCompanyView(FormView):
+    template_name = 'delete_confirmation.html'
+    form_class = ConfirmPasswordForm
+    success_url = reverse_lazy('home')  
+
+    def form_valid(self, form):
+        password = form.cleaned_data['password']
+        admin = authenticate(username=self.request.user.username, password=password)
+
+        if admin is not None:
+            admin.delete() 
+            logout(self.request)  
+            return super().form_valid(form)
+        else:
+            form.add_error('password', 'Incorrect password.')
+            return self.form_invalid(form)
+        
+
+class UpdateCompanyProfileView(View):
+    template_name = 'update_company_profile.html'
+    success_url = reverse_lazy('company-profile')
+
+    def get(self, request, *args, **kwargs):
+        admin_form = EditUserForm(instance=request.user)
+        company_form = CompanyForm(instance=request.user.related_company)
+
+        return render(request, self.template_name, {
+            'admin_form': admin_form,
+            'company_form': company_form,
+        })
+
+    def post(self, request, *args, **kwargs):
+        admin_form = EditUserForm(request.POST, instance=request.user)
+        company_form = CompanyForm(request.POST, request.FILES, instance=request.user.related_company)
+
+        if admin_form.is_valid():
+            admin_form.save()
+
+        if company_form.is_valid():
+            company_form.save()
+
+        return redirect(self.success_url)

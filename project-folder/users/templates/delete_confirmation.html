@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Confirm Account Deletion</h2>
+    <p>Please enter your password to confirm deletion of your account. This action is irreversible.</p>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-danger">Delete My Account</button>
+    </form>
+</div>
+{% endblock %}

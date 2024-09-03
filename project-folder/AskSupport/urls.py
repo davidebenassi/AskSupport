@@ -5,6 +5,9 @@ from companies.views import companies_home_page
 
 from django.contrib.auth import views as auth_views
 
+from django.conf.urls.static import static
+from django.conf import settings
+
 urlpatterns = [
     re_path(r"^$|^/$|^home/$", companies_home_page, name='home'),   # The companies home page is renderes ad the whole site home #
     path('admin/', admin.site.urls),
@@ -20,3 +23,5 @@ urlpatterns = [
     path('users/', include('users.urls')),
     path('tickets/', include('tickets.urls')),
 ]
+
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

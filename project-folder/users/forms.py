@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserChangeForm
 from django.contrib.auth.models import User
 from .models import UserProfile
 
@@ -15,19 +16,33 @@ class UserForm(UserCreationForm):
 
 class UserProfileForm(forms.ModelForm):
 
-    profilePicture = forms.ImageField(
-        required=False,
-        widget=forms.FileInput(),
-        help_text='Upload a profile picture (optional)'
-    )
-
     class Meta:
         model = UserProfile
         fields = ['profilePicture']
         labels = {
             'profilePicture' : 'Profile Picture'
         }
+        widgets = {
+            'profilePicture' : forms.FileInput(attrs={'class': 'form-control'})
+        }
 
+# * Update Profile * #
+class EditUserForm(UserChangeForm):
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'email']
+    
+    def __init__(self, *args, **kwargs):
+        super(EditUserForm, self).__init__(*args, **kwargs)
+        self.fields.pop('password', None)
+
+
+class ConfirmPasswordForm(forms.Form):
+    password = forms.CharField(
+        label="Password",
+        widget=forms.PasswordInput(attrs={'class': 'form-control'}),
+        help_text="Enter your password to confirm deletion."
+    )
 
 # * Rendered Form to register a new User * #
 class UserSignupForm(forms.Form):

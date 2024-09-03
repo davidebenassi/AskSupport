@@ -10,7 +10,7 @@
                     
                     {% if "CompanyAdministrators" in user.groups.all.0.name %}
                         <li class="nav-item">
-                            <a class="nav-link" href="">{{ user.related_company.name }}</a>
+                            <a class="nav-link" href="{% url 'company-profile' %}">{{ user.related_company.name }}</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="">FAQ</a>
@@ -29,7 +29,7 @@
                         
                     {% else %}
                         <li class="nav-item">
-                            <a class="nav-link" href="">{{ user.username }}</a>
+                            <a class="nav-link" href="{% url 'user-profile' %}">{{ user.username }}</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'user-tickets' %}">Tickets</a>

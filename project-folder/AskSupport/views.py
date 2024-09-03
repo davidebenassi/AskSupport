@@ -10,11 +10,9 @@ def signup_page(request):
 class CustomLoginView(LoginView):
     def get_success_url(self):
         user = self.request.user
-        # Check if user is in "CompanyAdministrators" group
         if user.groups.filter(name='CompanyAdministrators').exists():
-            return '/companies/admin-dashboard/'  # Reindirizza alla dashboard dell'admin
-        # Check if user is in another group, e.g., "Employees"
+            return '/companies/admin-dashboard/' 
         elif user.groups.filter(name='Employees').exists():
-            return '/companies/employee-dashboard/'  # Reindirizza alla dashboard degli impiegati
+            return '/companies/employee-dashboard/' 
         else:
-            return '/'  # Default redirect
+            return '/' 

@@ -1,0 +1,51 @@
+/* General Styles */
+.card {
+    border-radius: 0.5rem;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+    background-color: #f8f9fa;
+    font-weight: bold;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+.profile-card {
+    margin-bottom: 1rem;
+}
+
+.profile-picture {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+}
+
+.btn-primary {
+    border-radius: 0.25rem;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+}
+
+h2 {
+    font-size: 2rem;
+    font-weight: 500;
+}
+
+form .form-group {
+    margin-bottom: 1rem;
+}
+
+input[type="text"], input[type="email"], input[type="password"], textarea {
+    border-radius: 0.25rem;
+}
+
+.mt-4 {
+    margin-top: 2rem !important;
+}
+
+.mb-4 {
+    margin-bottom: 2rem !important;
+}
