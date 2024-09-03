@@ -1,191 +1,254 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h2>Employee Dashboard</h2>
-    {% if user.is_authenticated %}
-        <p> Utente : {{user.username}}</p>
-        <p> Dipendente di : {{user.employee_profile.company.name}}</p>
-        
+    <div class="container mt-4">
+        <h2>Employee Dashboard</h2>
+        {% if user.is_authenticated %}
+            <div class="alert alert-info">
+                <p>Utente: <strong>{{ user.username }}</strong></p>
+                <p>Dipendente di: <strong>{{ user.employee_profile.company.name }}</strong></p>
+            </div>
 
-        <h3>Open Tickets</h3>
-        <ul>
-            {% for ticket in open_tickets %}
-                <li>
-                    <a href="#" onclick="openChatModal('{{ ticket.id }}')">{{ ticket.title }} - {{ ticket.description|truncatewords:20  }} | {{ ticket.get_priority }}</a>
-                </li>
-            {% endfor %}
-        </ul>
-        
-        <!-- Modal Pop-up per la Chat -->
-        <div class="modal fade" id="chatModal" tabindex="-1" aria-labelledby="chatModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="chatModalLabel">Chat for Ticket #<span id="modalTicketId"></span></h5>
-                        <button type="button" class="btn btn-danger me-auto" onclick="submitCloseFormFromModal()">Close Ticket</button>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div id="chatMessages" class="chat-messages" style="height: 300px; overflow-y: auto;">
-                            <!-- Messaggi della chat verranno caricati qui -->
-                        </div>
-                        <form id="chatForm" method="POST">
-                            {% csrf_token %}
-                            <input type="hidden" name="ticket_id" id="chatTicketId">
-                            <div class="input-group mt-3">
-                                <textarea class="form-control" name="content" id="chatMessageContent" rows="2" placeholder="Type your message"></textarea>
-                                <button class="btn btn-primary" type="submit">Send</button>
+            <div class="mb-4">
+                <h3>Open Tickets</h3>
+                <ul class="list-group">
+                    {% for ticket in open_tickets %}
+                        <li class="list-group-item">
+                            <a href="#" onclick="openChatModal('{{ ticket.id }}')">
+                                {{ ticket.title }} - {{ ticket.description|truncatewords:20 }} | {{ ticket.get_priority }}
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+                
+                <!-- Modal Pop-up per la Chat -->
+                <div class="modal fade" id="chatModal" tabindex="-1" aria-labelledby="chatModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="chatModalLabel">Chat for Ticket #<span id="modalTicketId"></span></h5>
+                                <button type="button" class="btn btn-danger me-auto" onclick="submitCloseFormFromModal()">Close Ticket</button>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
-                        </form>
+                            <div class="modal-body">
+                                <div id="chatMessages" class="chat-messages" style="height: 300px; overflow-y: auto;">
+                                    <!-- Messaggi della chat verranno caricati qui -->
+                                </div>
+                                <form id="chatForm" method="POST">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="ticket_id" id="chatTicketId">
+                                    <div class="input-group mt-3">
+                                        <textarea class="form-control" name="content" id="chatMessageContent" rows="2" placeholder="Type your message"></textarea>
+                                        <button class="btn btn-primary" type="submit">Send</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
-        
-        <script>
-            function openChatModal(ticketId) {
-                // Imposta l'ID del ticket nel modal
-                document.getElementById('modalTicketId').textContent = ticketId;
-                document.getElementById('chatTicketId').value = ticketId;
-                
-                // Effettua una richiesta AJAX per ottenere i messaggi della chat
-                fetch(`/tickets/${ticketId}/messages/`)
-                    .then(response => response.json())
-                    .then(data => {
-                        const chatMessages = document.getElementById('chatMessages');
-                        chatMessages.innerHTML = ''; // Resetta i messaggi
-        
-                        // Inserisci i messaggi nel modal
-                        data.messages.forEach(message => {
-                            const messageElement = document.createElement('div');
-                            messageElement.classList.add('chat-message');
-                            messageElement.innerHTML = `<strong>${message.sender__username}</strong> <small>(${formatDate(message.timestamp)})</small> : ${message.content}`;
-                            chatMessages.appendChild(messageElement);
-                        });
-        
-                        // Scrolla alla fine dei messaggi
-                        chatMessages.scrollTop = chatMessages.scrollHeight;
-        
-                        // Apri il modal
-                        const chatModal = new bootstrap.Modal(document.getElementById('chatModal'));
-                        chatModal.show();
-                    });
-            }
-        
-            // Message Send //
-            document.getElementById('chatForm').addEventListener('submit', function(event) {
-                event.preventDefault();
-                
-                const formData = new FormData(this);
-                
-                fetch(`/tickets/${formData.get('ticket_id')}/send_message/`, {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        openChatModal(formData.get('ticket_id'));  // Ricarica i messaggi
-                        document.getElementById('chatMessageContent').value = '';  // Resetta il campo messaggio
+
+                <script>
+                    function openChatModal(ticketId) {
+                        // Imposta l'ID del ticket nel modal
+                        document.getElementById('modalTicketId').textContent = ticketId;
+                        document.getElementById('chatTicketId').value = ticketId;
+
+                        // Effettua una richiesta AJAX per ottenere i messaggi della chat
+                        fetch(`/tickets/${ticketId}/messages/`)
+                            .then(response => response.json())
+                            .then(data => {
+                                const chatMessages = document.getElementById('chatMessages');
+                                chatMessages.innerHTML = ''; // Resetta i messaggi
+
+                                // Inserisci i messaggi nel modal
+                                data.messages.forEach(message => {
+                                    const messageElement = document.createElement('div');
+                                    messageElement.classList.add('chat-message');
+                                    messageElement.innerHTML = `<strong>${message.sender__username}</strong> <small>(${formatDate(message.timestamp)})</small> : ${message.content}`;
+                                    chatMessages.appendChild(messageElement);
+                                });
+
+                                // Scrolla alla fine dei messaggi
+                                chatMessages.scrollTop = chatMessages.scrollHeight;
+
+                                // Apri il modal
+                                const chatModal = new bootstrap.Modal(document.getElementById('chatModal'));
+                                chatModal.show();
+                            });
                     }
-                });
-            });
 
-            function submitCloseFormFromModal() {
-                var reason = prompt("Please enter the reason for closing the ticket:");
-                if (reason !== null && reason.trim() !== "") {
-                    // Ottieni l'ID del ticket dal modal
-                    const ticketId = document.getElementById('chatTicketId').value;
+                    // Message Send //
+                    document.getElementById('chatForm').addEventListener('submit', function(event) {
+                        event.preventDefault();
 
-                    // Crea un form per l'invio
-                    const form = document.createElement('form');
-                    form.method = 'POST';
-                    form.action = `/tickets/close-ticket/${ticketId}/`; 
-                    // Aggiungi il CSRF token
-                    const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
-                    const csrfInput = document.createElement('input');
-                    csrfInput.type = 'hidden';
-                    csrfInput.name = 'csrfmiddlewaretoken';
-                    csrfInput.value = csrfToken;
-                    form.appendChild(csrfInput);
+                        const formData = new FormData(this);
 
-                    // Aggiungi il motivo della chiusura
-                    const reasonInput = document.createElement('input');
-                    reasonInput.type = 'hidden';
-                    reasonInput.name = 'close_reason';
-                    reasonInput.value = reason;
-                    form.appendChild(reasonInput);
-
-                    // Aggiungi il form al body e invialo
-                    document.body.appendChild(form);
-                    form.submit();
-                } else {
-                    alert("You must provide a reason to close the ticket.");
-                }
-            }
-        </script>
-
-
-        <h3>Pending Tickets</h3>
-        <table>
-            <tbody>
-                {% for ticket in pending_tickets %}
-                    <tr>
-                        <td>{{ ticket.title }} </td>
-                        <td>{{ ticket.description }} </td>
-                        <td>{{ ticket.get_priority }}</td>
-                        <td>
-                            <form method="POST" action="{% url 'accept-ticket' ticket.id %}">
-                                {% csrf_token %}
-                                <button type="submit">Accept</button>
-                            </form>
-                        </td>
-                        <td>
-                            <form id="close-ticket-form" method="POST" action="{% url 'close-ticket' ticket.id %}">
-                                {% csrf_token %}
-                                <input type="hidden" name="close_reason" id="close-reason">
-                                <button type="button" onclick="submitCloseForm('{{ ticket.id }}')">Reject</button>
-                            </form>
-                        </td>
-
-                        <script>
-                            function submitCloseForm(ticketId) {
-                                var reason = prompt("Please enter the reason for rejection:");
-                                if (reason !== null && reason.trim() !== "") {
-                                    // Set the reason in the hidden input field
-                                    document.getElementById('close-reason').value = reason;
-                                    // Submit the form
-                                    document.getElementById('close-ticket-form').submit();
-                                } else {
-                                    alert("You must provide a reason to close the ticket.");
-                                }
+                        fetch(`/tickets/${formData.get('ticket_id')}/send_message/`, {
+                            method: 'POST',
+                            body: formData
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                openChatModal(formData.get('ticket_id'));  // Ricarica i messaggi
+                                document.getElementById('chatMessageContent').value = '';  // Resetta il campo messaggio
                             }
-                        </script>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                        });
+                    });
 
-        <h3>Closed Tickets</h3>
-        <ul>    
-            {% for ticket in closed_tickets %}
-            <li>
-                {{ ticket.title }} - {{ ticket.description }} 
-                    <br>
-                    Created : {{ ticket.created_at }}
-            </li>
-            {% endfor %}
-        </ul>
- 
-        <h3>Already Handled Tickets</h3>
-        <ul>        
-            {% for ticket in already_handled_tickets %}
-            <li>
-                {{ ticket.title }} - {{ ticket.description }} 
-                    <br>
-                    Created : {{ ticket.created_at }}
-            </li>
-            {% endfor %}
-        </ul>
-    {% endif %}
+                    function submitCloseFormFromModal() {
+                        var reason = prompt("Please enter the reason for closing the ticket:");
+                        if (reason !== null && reason.trim() !== "") {
+                            // Ottieni l'ID del ticket dal modal
+                            const ticketId = document.getElementById('chatTicketId').value;
+
+                            // Crea un form per l'invio
+                            const form = document.createElement('form');
+                            form.method = 'POST';
+                            form.action = `/tickets/close-ticket/${ticketId}/`; 
+                            // Aggiungi il CSRF token
+                            const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+                            const csrfInput = document.createElement('input');
+                            csrfInput.type = 'hidden';
+                            csrfInput.name = 'csrfmiddlewaretoken';
+                            csrfInput.value = csrfToken;
+                            form.appendChild(csrfInput);
+
+                            // Aggiungi il motivo della chiusura
+                            const reasonInput = document.createElement('input');
+                            reasonInput.type = 'hidden';
+                            reasonInput.name = 'close_reason';
+                            reasonInput.value = reason;
+                            form.appendChild(reasonInput);
+
+                            // Aggiungi il form al body e invialo
+                            document.body.appendChild(form);
+                            form.submit();
+                        } else {
+                            alert("You must provide a reason to close the ticket.");
+                        }
+                    }
+                </script>
+
+                <h3 class="mt-4">Pending Tickets</h3>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Description</th>
+                            <th>Priority</th>
+                            <th>Accept</th>
+                            <th>Reject</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ticket in pending_tickets %}
+                            <tr>
+                                <td>{{ ticket.title }}</td>
+                                <td>{{ ticket.description }}</td>
+                                <td>{{ ticket.get_priority }}</td>
+                                <td>
+                                    <form method="POST" action="{% url 'accept-ticket' ticket.id %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-success">Accept</button>
+                                    </form>
+                                </td>
+                                <td>
+                                    <form id="close-ticket-form-{{ ticket.id }}" method="POST" action="{% url 'close-ticket' ticket.id %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="close_reason" id="close-reason-{{ ticket.id }}">
+                                        <button type="button" class="btn btn-danger" onclick="submitCloseForm('{{ ticket.id }}')">Reject</button>
+                                    </form>
+                                </td>
+                                <script>
+                                    function submitCloseForm(ticketId) {
+                                        var reason = prompt("Please enter the reason for rejection:");
+                                        if (reason !== null && reason.trim() !== "") {
+                                            // Set the reason in the hidden input field
+                                            document.getElementById('close-reason-' + ticketId).value = reason;
+                                            // Submit the form
+                                            document.getElementById('close-ticket-form-' + ticketId).submit();
+                                        } else {
+                                            alert("You must provide a reason to close the ticket.");
+                                        }
+                                    }
+                                </script>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <h3 class="mt-4">Closed Tickets</h3>
+                <ul class="list-group">
+                    {% for ticket in closed_tickets %}
+                        <li class="list-group-item">
+                            {{ ticket.title }} - {{ ticket.description }} 
+                            <br>
+                            Created: {{ ticket.created_at }}
+                        </li>
+                    {% endfor %}
+                </ul>
+
+                <h3 class="mt-4">Already Handled Tickets</h3>
+                <ul class="list-group">
+                    {% for ticket in already_handled_tickets %}
+                        <li class="list-group-item">
+                            {{ ticket.title }} - {{ ticket.description }} 
+                            <br>
+                            Created: {{ ticket.created_at }}
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div class="container mt-4">
+                <h2>FAQs for {{ user.employee_profile.company.name }}</h2>
+
+                <div class="mb-4">
+                    <h4>Create a New FAQ</h4>
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ form.as_p }}
+                        <button type="submit" class="btn btn-success">Create FAQ</button>
+                    </form>
+                </div>
+                <h4>Created FAQs</h4>
+                <h5>FAQs to be approved</h5>
+                <div class="accordion" id="faqAccordion">
+                    {% for faq in notApprovedFaqs %}
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="heading{{ faq.id }}">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ faq.id }}" aria-expanded="false" aria-controls="collapse{{ faq.id }}">
+                                <strong>{{ faq.question }}</strong>
+                            </button>
+                        </h2>
+                        <div id="collapse{{ faq.id }}" class="accordion-collapse collapse" aria-labelledby="heading{{ faq.id }}" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                {{ faq.answer }}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <h5>Approved FAQs</h5>
+                <div class="accordion" id="faqAccordionApproved">
+                    {% for faq in approvedFaqs %}
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingApproved{{ faq.id }}">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseApproved{{ faq.id }}" aria-expanded="false" aria-controls="collapseApproved{{ faq.id }}">
+                                <strong>{{ faq.question }}</strong>
+                            </button>
+                        </h2>
+                        <div id="collapseApproved{{ faq.id }}" class="accordion-collapse collapse" aria-labelledby="headingApproved{{ faq.id }}" data-bs-parent="#faqAccordionApproved">
+                            <div class="accordion-body">
+                                {{ faq.answer }}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
 {% endblock %}

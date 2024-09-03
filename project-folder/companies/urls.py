@@ -11,6 +11,7 @@ urlpatterns = [
     
     path('faq/', company_faq_view, name='company-faq'),
     path('faq/delete/<int:faq_id>/', delete_faq, name='delete-faq'),
+    path('faq/approve/<int:faq_id>/', approve_faq, name='approve-faq'),
 
     path('admin-dashboard/', AdminDashboardView.as_view(), name='admin-dashboard'),
     path('remove-employee/<int:employee_id>/', remove_employee, name='remove-employee'),

@@ -38,6 +38,8 @@ class CompanyPageView(FormMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        company = self.get_object()
+        context['faqs'] = company.faqs.all().filter(approved=True)
         context['form'] = self.get_form()
         return context
 
@@ -118,11 +120,31 @@ def employee_dashboard(request):
     employee_profile = request.user.employee_profile
     companyTickets = Ticket.objects.filter(company=employee_profile.company)
 
+    company = employee_profile.company
+    faqs = company.faqs.all()
+    notApprovedFaqs = faqs.filter(approved=False)
+    approvedFaqs = faqs.filter(approved=True)
+
+    if request.method == 'POST':
+        form = FAQCreateForm(request.POST)
+        if form.is_valid():
+            faq = form.save(commit=False)
+            faq.company = company
+
+            faq.approved = False
+            faq.save()
+            return redirect('employee-dashboard')
+    else:
+        form = FAQCreateForm()
+
     return render(request, 'employee_dashboard.html', context={
         'open_tickets' : companyTickets.filter(assigned_employee=employee_profile, status=Ticket.OPEN).order_by('-priority'),
         'pending_tickets' : companyTickets.filter(status=Ticket.PENDING).order_by('-priority'),
         'closed_tickets' : companyTickets.filter(assigned_employee=employee_profile, status=Ticket.CLOSED),
-        'already_handled_tickets' : companyTickets.filter(status=Ticket.OPEN).exclude(assigned_employee=employee_profile)
+        'already_handled_tickets' : companyTickets.filter(status=Ticket.OPEN).exclude(assigned_employee=employee_profile),
+        'form': form,
+        'notApprovedFaqs': notApprovedFaqs,
+        'approvedFaqs': approvedFaqs
         }
     )
 
@@ -170,7 +192,6 @@ class DeleteCompanyView(FormView):
             form.add_error('password', 'Incorrect password.')
             return self.form_invalid(form)
         
-
 class UpdateCompanyProfileView(View):
     template_name = 'update_company_profile.html'
     success_url = reverse_lazy('company-profile')
@@ -208,29 +229,33 @@ def delete_faq(request, faq_id):
 
     return redirect('company-faq')
 
-@login_required
+@user_passes_test(is_admin)
+def approve_faq(request, faq_id):
+    faq = get_object_or_404(FAQ, id=faq_id, company=request.user.related_company)
+
+    if request.method == "POST":
+        faq.approved = True
+        faq.save()
+        return redirect('company-faq')
+
+    return redirect('company-faq')
+
+@user_passes_test(is_admin)
 def company_faq_view(request):
     company = request.user.related_company
     faqs = company.faqs.all()
-    #notApprovedFaqs = faqs.filter(approved=False)
-    #approvedFaqs = faqs.filter(approved=True)
+    notApprovedFaqs = faqs.filter(approved=False)
+    approvedFaqs = faqs.filter(approved=True)
 
     if request.method == 'POST':
         form = FAQCreateForm(request.POST)
         if form.is_valid():
             faq = form.save(commit=False)
             faq.company = company
-
-            if request.user.groups.filter(name='CompanyAdministrators').exists():
-                faq.approved = True  
-            elif request.user.groups.filter(name='Employees').exists():
-                faq.approved = False
-            else:
-                raise PermissionDenied("You don't have permissions to create a FAQ.")
-            
+            faq.approved = True  
             faq.save()
             return redirect('company-faq')
     else:
         form = FAQCreateForm()
 
-    return render(request, 'company_faq.html', {'company': company, 'faqs': faqs, 'form': form})
+    return render(request, 'company_faq.html', {'company': company, 'notApprovedFaqs': notApprovedFaqs, 'approvedFaqs' : approvedFaqs, 'form': form})
