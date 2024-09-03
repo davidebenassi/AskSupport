@@ -1,11 +1,15 @@
 from .forms import *
 from django.views.generic import FormView
 from django.urls import reverse_lazy
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth import authenticate, logout
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import DetailView, UpdateView, DeleteView
+from django.http import Http404
 
 from tickets.models import Ticket 
+from .models import UserProfile
 
 class UserSignupView(FormView):
     form_class = UserSignupForm
@@ -30,31 +34,57 @@ def user_tickets(request):
         }
     )
 
-@login_required
-def profile_view(request):
-    if request.method == 'POST':
-        user_form = UserUpdateForm(request.POST, instance=request.user)
-        profile_form = UserProfileForm(request.POST, request.FILES, instance=request.user.related_profile)
-        password_form = PasswordChangeFormCustom(user=request.user, data=request.POST)
+class UserProfileView(LoginRequiredMixin, DetailView):
+    model = UserProfile
+    template_name = 'user_profile.html'
+    
+    def get_object(self):
+        # Restituisce il profilo dell'utente loggato
+        return self.request.user.related_profile
 
-        if user_form.is_valid() and profile_form.is_valid() and (not password_form.has_changed() or password_form.is_valid()):
+class EditProfileView(LoginRequiredMixin, UpdateView):
+    model = UserProfile
+    template_name = 'edit_profile.html'
+    form_class = UserProfileForm
+    second_form_class = UserForm
+    success_url = reverse_lazy('user-profile')
+
+    def get_object(self):
+        return self.request.user.related_profile
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if 'user_form' not in context:
+            context['user_form'] = self.second_form_class(instance=self.request.user)
+        if 'profile_form' not in context:
+            context['profile_form'] = self.form_class(instance=self.request.user.related_profile)
+        return context
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        user_form = UserForm(request.POST, instance=self.request.user)
+        profile_form = UserProfileForm(request.POST, request.FILES, instance=self.request.user.related_profile)
+        if user_form.is_valid() and profile_form.is_valid():
             user_form.save()
             profile_form.save()
-            
-            if password_form.is_valid():
-                user = password_form.save()
-                update_session_auth_hash(request, user)  # Keeps the user logged in after changing the password
+            return self.form_valid(profile_form)
+        else:
+            return self.form_invalid(user_form)
+        
 
-            return redirect('profile')  # Redirect to the same page or another page
+class DeleteProfileView(LoginRequiredMixin, FormView):
+    template_name = 'delete_profile_confirmation.html'
+    form_class = ConfirmPasswordForm
+    success_url = reverse_lazy('home')  # O un'altra pagina dopo la cancellazione
 
-    else:
-        user_form = UserUpdateForm(instance=request.user)
-        profile_form = UserProfileForm(instance=request.user.related_profile)
-        password_form = PasswordChangeFormCustom(user=request.user)
+    def form_valid(self, form):
+        password = form.cleaned_data['password']
+        user = authenticate(username=self.request.user.username, password=password)
 
-    context = {
-        'user_form': user_form,
-        'profile_form': profile_form,
-        'password_form': password_form,
-    }
-    return render(request, 'profile.html', context)
+        if user is not None:
+            user.delete()  # Elimina User e il suo UserProfile correlato
+            logout(self.request)  # Disconnetti l'utente dopo l'eliminazione
+            return super().form_valid(form)
+        else:
+            form.add_error('password', 'Incorrect password.')
+            return self.form_invalid(form)

@@ -29,7 +29,7 @@ class UserProfileForm(forms.ModelForm):
             'profilePicture' : 'Profile Picture'
         }
 
-# * Update Profile * #
+"""# * Update Profile * #
 class UserUpdateForm(UserChangeForm):
     class Meta:
         model = User
@@ -39,7 +39,14 @@ class PasswordChangeFormCustom(PasswordChangeForm):
     class Meta:
         model = User
         fields = ['password']
+"""
 
+class ConfirmPasswordForm(forms.Form):
+    password = forms.CharField(
+        label="Password",
+        widget=forms.PasswordInput(attrs={'class': 'form-control'}),
+        help_text="Enter your password to confirm deletion."
+    )
 
 # * Rendered Form to register a new User * #
 class UserSignupForm(forms.Form):
