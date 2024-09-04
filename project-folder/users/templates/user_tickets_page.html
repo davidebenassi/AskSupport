@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% load static %}
+
 {% block content %}
 <div class="container mt-5">
     <!-- Open Tickets Section -->
@@ -7,7 +9,7 @@
     <ul class="list-group mb-5">
         {% for ticket in open_tickets %}
         <li class="list-group-item">
-            <a href="#" onclick="openChatModal('{{ ticket.id }}', '{{ ticket.title }}', '{{ ticket.description }}', 'open')">{{ ticket.title }} - {{ ticket.description }}</a>
+            <a href="#" onclick="openChatModal('{{ ticket.id }}', '{{ ticket.title }}', '{{ ticket.description }}', true)">{{ ticket.title }} - {{ ticket.description }}</a>
         </li>
         {% endfor %}
     </ul>
@@ -59,87 +61,11 @@
         {% for ticket in closed_tickets %}
 
         <li class="list-group-item">
-            <a href="#" onclick="openChatModal('{{ ticket.id }}', '{{ ticket.title }}', '{{ ticket.description }}', 'closed')">{{ ticket.title }}</a> <small> | Closed because: {{ ticket.close_reason }}</small>
+            <a href="#" onclick="openChatModal('{{ ticket.id }}', '{{ ticket.title }}', '{{ ticket.description }}', false)">{{ ticket.title }}</a> <small> | Closed because: {{ ticket.close_reason }}</small>
         </li>
         {% endfor %}
     </ul>
 </div>
 
-<script>
-    function openChatModal(ticketId, ticketTitle, ticketDescription, ticketStatus) {
-       
-        document.getElementById('modalTicketTitle').textContent = ticketTitle;
-        document.getElementById('modalTicketDesc').textContent = ticketDescription;
-        document.getElementById('chatTicketId').value = ticketId;
-
-        // AJAX request to get messages //
-        fetch(`/tickets/${ticketId}/messages/`)
-            .then(response => response.json())
-            .then(data => {
-                const chatMessages = document.getElementById('chatMessages');
-                chatMessages.innerHTML = ''; 
-
-                data.messages.forEach(message => {
-                    const messageElement = document.createElement('div');
-                    messageElement.classList.add('mb-2');
-                    messageElement.innerHTML = `<strong>${message.sender__username}</strong> <small>(${formatDate(message.timestamp)})</small>: ${message.content}`;
-                    chatMessages.appendChild(messageElement);
-                });
-
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-
-                const chatForm = document.getElementById('chatForm');
-                if (ticketStatus === 'open') {
-                    chatForm.style.display = 'block';
-    
-                    chatForm.addEventListener('submit', function(event) {
-                        event.preventDefault();
-
-                        const formData = new FormData(this);
-
-                        fetch(`/tickets/${ticketId}/send_message/`, {
-                            method: 'POST',
-                            body: formData
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                updateChatMessages(ticketId);
-                                document.getElementById('chatMessageContent').value = '';                                
-                            }
-                        });
-                    });
-                } 
-                else {
-                    chatForm.style.display = 'none';
-                }   
-
-                // Open modal //
-                const chatModal = new bootstrap.Modal(document.getElementById('chatModal'));
-                chatModal.show();
-            });
-    }
-
-    function updateChatMessages(ticketId) {
-        fetch(`/tickets/${ticketId}/messages/`)
-            .then(response => response.json())
-            .then(data => {
-                const chatMessages = document.getElementById('chatMessages');
-                chatMessages.innerHTML = '';
-
-                data.messages.forEach(message => {
-                    const messageElement = document.createElement('div');
-                    messageElement.classList.add('mb-2');
-                    messageElement.innerHTML = `<strong>${message.sender__username}</strong> <small>(${formatDate(message.timestamp)})</small>: ${message.content}`;
-                    chatMessages.appendChild(messageElement);
-                });
-
-                // Scrolla alla fine dei messaggi
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            })
-            .catch(error => {
-                console.error('Error fetching messages:', error);
-            });
-    }
-</script>
+<script src="{% static 'js/manageTicketFunctions.js' %}" defer> </script>
 {% endblock %}

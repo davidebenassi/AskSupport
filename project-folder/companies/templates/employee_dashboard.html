@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% load static %}
+
 {% block content %}
 <div class="container mt-4">
     <h2 class="mb-4">Employee Dashboard</h2>
@@ -9,45 +11,22 @@
             <p class="mb-0">Company: <strong>{{ user.employee_profile.company.name }}</strong></p>
         </div>
 
-        <!-- Open Tickets -->
-        <div class="mb-4">
-            <h3 class="mb-3">Open Tickets</h3>
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>Title</th>
-                        <th>Description</th>
-                        <th>Priority</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for ticket in open_tickets %}
-                        <tr>
-                            <td>{{ ticket.title }}</td>
-                            <td>{{ ticket.description|truncatewords:20 }}</td>
-                            <td>{{ ticket.get_priority }}</td>
-                            <td>
-                                <button class="btn btn-primary" onclick="openChatModal('{{ ticket.id }}')">Chat</button>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-
-            <!-- Modal Pop-up per la Chat -->
-            <div class="modal fade" id="chatModal" tabindex="-1" aria-labelledby="chatModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-lg">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="chatModalLabel">Chat for Ticket #<span id="modalTicketId"></span></h5>
-                            <button type="button" class="btn btn-danger me-2" onclick="submitCloseFormFromModal()">Close Ticket</button>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <!-- Modal Pop-up for Open Tickets -->
+        <div class="modal fade" id="chatModal" tabindex="-1" aria-labelledby="chatModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="chatModalLabel">Chat for Ticket : <strong><span id="modalTicketTitle"></strong></span></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-header">
+                        <p class="modal-title" id="chatModalLabel"><span id="modalTicketDesc"></span></p>
+                    </div>
+                    <div class="modal-body">
+                        <div id="chatMessages" class="chat-messages" style="height: 300px; overflow-y: auto;">
+                            <!-- Messaggi della chat verranno caricati qui -->
                         </div>
-                        <div class="modal-body">
-                            <div id="chatMessages" class="chat-messages" style="height: 300px; overflow-y: auto;">
-                                <!-- Messaggi della chat verranno caricati qui -->
-                            </div>
+                        <div id="chatFormContainer">
                             <form id="chatForm" method="POST">
                                 {% csrf_token %}
                                 <input type="hidden" name="ticket_id" id="chatTicketId">
@@ -60,90 +39,43 @@
                     </div>
                 </div>
             </div>
-
-            <script>
-                function openChatModal(ticketId) {
-                    // Imposta l'ID del ticket nel modal
-                    document.getElementById('modalTicketId').textContent = ticketId;
-                    document.getElementById('chatTicketId').value = ticketId;
-
-                    // Effettua una richiesta AJAX per ottenere i messaggi della chat
-                    fetch(`/tickets/${ticketId}/messages/`)
-                        .then(response => response.json())
-                        .then(data => {
-                            const chatMessages = document.getElementById('chatMessages');
-                            chatMessages.innerHTML = ''; // Resetta i messaggi
-
-                            // Inserisci i messaggi nel modal
-                            data.messages.forEach(message => {
-                                const messageElement = document.createElement('div');
-                                messageElement.classList.add('mb-2');
-                                messageElement.innerHTML = `<strong>${message.sender__username}</strong> <small>(${formatDate(message.timestamp)})</small>: ${message.content}`;
-                                chatMessages.appendChild(messageElement);
-                            });
-
-                            // Scrolla alla fine dei messaggi
-                            chatMessages.scrollTop = chatMessages.scrollHeight;
-
-                            // Apri il modal
-                            const chatModal = new bootstrap.Modal(document.getElementById('chatModal'));
-                            chatModal.show();
-                        });
-                }
-
-                // Gestisce l'invio del messaggio
-                document.getElementById('chatForm').addEventListener('submit', function(event) {
-                    event.preventDefault();
-
-                    const formData = new FormData(this);
-
-                    fetch(`/tickets/${formData.get('ticket_id')}/send_message/`, {
-                        method: 'POST',
-                        body: formData
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            openChatModal(formData.get('ticket_id'));  // Ricarica i messaggi
-                            document.getElementById('chatMessageContent').value = '';  // Resetta il campo messaggio
-                        }
-                    });
-                });
-
-                function submitCloseFormFromModal() {
-                    var reason = prompt("Please enter the reason for closing the ticket:");
-                    if (reason !== null && reason.trim() !== "") {
-                        // Ottieni l'ID del ticket dal modal
-                        const ticketId = document.getElementById('chatTicketId').value;
-
-                        // Crea un form per l'invio
-                        const form = document.createElement('form');
-                        form.method = 'POST';
-                        form.action = `/tickets/close-ticket/${ticketId}/`; 
-                        // Aggiungi il CSRF token
-                        const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
-                        const csrfInput = document.createElement('input');
-                        csrfInput.type = 'hidden';
-                        csrfInput.name = 'csrfmiddlewaretoken';
-                        csrfInput.value = csrfToken;
-                        form.appendChild(csrfInput);
-
-                        // Aggiungi il motivo della chiusura
-                        const reasonInput = document.createElement('input');
-                        reasonInput.type = 'hidden';
-                        reasonInput.name = 'close_reason';
-                        reasonInput.value = reason;
-                        form.appendChild(reasonInput);
-
-                        // Aggiungi il form al body e invialo
-                        document.body.appendChild(form);
-                        form.submit();
-                    } else {
-                        alert("You must provide a reason to close the ticket.");
-                    }
-                }
-            </script>
         </div>
+
+        <!-- Open Tickets -->
+        <div class="mb-4">
+            <h3 class="mb-3">Open Tickets</h3>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Description</th>
+                        <th>Priority</th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ticket in open_tickets %}
+                        <tr>
+                            <td>{{ ticket.title }}</td>
+                            <td>{{ ticket.description|truncatewords:20 }}</td>
+                            <td>{{ ticket.get_priority }}</td>
+                            <td>
+                                <a href="#" onclick="openChatModal('{{ ticket.id }}', '{{ ticket.title }}', '{{ ticket.description }}', true)">Chat</a>
+                            </td>
+                            <td>
+                                <form id="close-ticket-form-{{ ticket.id }}" method="POST" action="{% url 'close-ticket' ticket.id %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="close_reason" id="close-reason-{{ ticket.id }}">
+                                    <button type="button" class="btn btn-danger" onclick="submitCloseForm('{{ ticket.id }}')">Close Ticket</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
 
         <!-- Pending Tickets -->
         <div class="mb-4">
@@ -154,8 +86,8 @@
                         <th>Title</th>
                         <th>Description</th>
                         <th>Priority</th>
-                        <th>Accept</th>
-                        <th>Reject</th>
+                        <th></th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -177,19 +109,7 @@
                                     <button type="button" class="btn btn-danger" onclick="submitCloseForm('{{ ticket.id }}')">Reject</button>
                                 </form>
                             </td>
-                            <script>
-                                function submitCloseForm(ticketId) {
-                                    var reason = prompt("Please enter the reason for rejection:");
-                                    if (reason !== null && reason.trim() !== "") {
-                                        // Set the reason in the hidden input field
-                                        document.getElementById('close-reason-' + ticketId).value = reason;
-                                        // Submit the form
-                                        document.getElementById('close-ticket-form-' + ticketId).submit();
-                                    } else {
-                                        alert("You must provide a reason to close the ticket.");
-                                    }
-                                }
-                            </script>
+                            
                         </tr>
                     {% endfor %}
                 </tbody>
@@ -202,9 +122,7 @@
             <ul class="list-group">
                 {% for ticket in closed_tickets %}
                     <li class="list-group-item">
-                        {{ ticket.title }} - {{ ticket.description }}
-                        <br>
-                        Created: <small>{{ ticket.created_at }}</small>
+                        <a href="#" onclick="openChatModal('{{ ticket.id }}', '{{ ticket.title }}', '{{ ticket.description }}', false)">{{ ticket.title }}</a> <small> | Closed because: {{ ticket.close_reason }}</small>
                     </li>
                 {% endfor %}
             </ul>
@@ -216,9 +134,7 @@
             <ul class="list-group">
                 {% for ticket in already_handled_tickets %}
                     <li class="list-group-item">
-                        {{ ticket.title }} - {{ ticket.description }}
-                        <br>
-                        Created: <small>{{ ticket.created_at }}</small>
+                        <a href="#" onclick="openChatModal('{{ ticket.id }}', '{{ ticket.title }}', '{{ ticket.description }}', false)">{{ ticket.title }}</a>
                     </li>
                 {% endfor %}
             </ul>
@@ -278,4 +194,6 @@
         </div>
     {% endif %}
 </div>
+
+<script src="{% static 'js/manageTicketFunctions.js' %}" defer> </script>
 {% endblock %}
