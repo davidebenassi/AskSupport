@@ -34,7 +34,6 @@ class Ticket(models.Model):
     assigned_employee = models.ForeignKey(EmployeeProfile, on_delete=models.SET_NULL, related_name='tickets', null=True, blank=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=PENDING)
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
     close_reason = models.TextField(null=True, blank=True)
     priority = models.IntegerField(choices=PRIORITY, default=NONE)
 

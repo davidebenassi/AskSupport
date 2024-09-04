@@ -3,18 +3,9 @@
 {% load static %}
 
 {% block content %}
-<div class="container mt-5">
-    <!-- Open Tickets Section -->
-    <h2 class="mb-4">Open Tickets</h2>
-    <ul class="list-group mb-5">
-        {% for ticket in open_tickets %}
-        <li class="list-group-item">
-            <a href="#" onclick="openChatModal('{{ ticket.id }}', '{{ ticket.title }}', '{{ ticket.description }}', true)">{{ ticket.title }} - {{ ticket.description }}</a>
-        </li>
-        {% endfor %}
-    </ul>
+<div class="container mt-4">
 
-    <!-- Modal Pop-up for Open Tickets -->
+    <!-- Modal Pop-up for Tickets -->
     <div class="modal fade" id="chatModal" tabindex="-1" aria-labelledby="chatModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -44,16 +35,59 @@
         </div>
     </div>
 
+    <!-- Open Tickets Section -->
+    <div class="mb-4">
+        <h3 class="mb-3">Open Tickets</h3>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Description</th>
+                    <th>Priority</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ticket in open_tickets %}
+                    <tr>
+                        <td>{{ ticket.title }}</td>
+                        <td>{{ ticket.description|truncatewords:20 }}</td>
+                        <td>{{ ticket.get_priority }}</td>
+                        <td>
+                            <button class="btn btn-primary" onclick="openChatModal('{{ ticket.id }}', '{{ ticket.title }}', '{{ ticket.description }}', true)">Chat</button>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    
+
     <!-- Pending Tickets Section -->
-    <h2 class="mb-4">Pending Tickets</h2>
-    <ul class="list-group mb-5">
-        {% for ticket in pending_tickets %}
-        <li class="list-group-item">
-            <p class="mb-1"><strong>{{ ticket.title }}</strong> - {{ ticket.description }}</p>
-            <small>Created: {{ ticket.created_at }}</small>
-        </li>
-        {% endfor %}
-    </ul>
+    <div class="mb-4">
+        <h3 class="mb-3">Pending Tickets</h3>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Description</th>
+                    <th>Priority</th>
+                    <th>Created At</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ticket in pending_tickets %}
+                    <tr>
+                        <td>{{ ticket.title }}</td>
+                        <td>{{ ticket.description }}</td>
+                        <td>{{ ticket.get_priority }}</td>
+                        <td>{{ ticket.created_at }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
     <!-- Closed Tickets Section -->
     <h2 class="mb-4">Closed Tickets</h2>

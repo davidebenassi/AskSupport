@@ -11,7 +11,7 @@
             <p class="mb-0">Company: <strong>{{ user.employee_profile.company.name }}</strong></p>
         </div>
 
-        <!-- Modal Pop-up for Open Tickets -->
+        <!-- Modal Pop-up for Tickets -->
         <div class="modal fade" id="chatModal" tabindex="-1" aria-labelledby="chatModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
@@ -61,7 +61,7 @@
                             <td>{{ ticket.description|truncatewords:20 }}</td>
                             <td>{{ ticket.get_priority }}</td>
                             <td>
-                                <a href="#" onclick="openChatModal('{{ ticket.id }}', '{{ ticket.title }}', '{{ ticket.description }}', true)">Chat</a>
+                                <button class="btn btn-primary" onclick="openChatModal('{{ ticket.id }}', '{{ ticket.title }}', '{{ ticket.description }}', true)">Chat</button>
                             </td>
                             <td>
                                 <form id="close-ticket-form-{{ ticket.id }}" method="POST" action="{% url 'close-ticket' ticket.id %}">
@@ -86,6 +86,7 @@
                         <th>Title</th>
                         <th>Description</th>
                         <th>Priority</th>
+                        <th>Created At</th>
                         <th></th>
                         <th></th>
                     </tr>
@@ -96,6 +97,7 @@
                             <td>{{ ticket.title }}</td>
                             <td>{{ ticket.description }}</td>
                             <td>{{ ticket.get_priority }}</td>
+                            <td>{{ ticket.created_at }}</td>
                             <td>
                                 <form method="POST" action="{% url 'accept-ticket' ticket.id %}">
                                     {% csrf_token %}
