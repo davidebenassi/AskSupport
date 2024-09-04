@@ -8,14 +8,11 @@
         <div class="col-md-4">
             <div class="card mb-4 shadow-sm">
                 <a href="{% url 'company-page' company.pk %}" class="text-decoration-none text-dark">
-                    <!-- Card Image -->
+                    
                     <img src="{{ company.companyLogo.url }}" class="card-img-top" alt="{{ company.name }}" style="height: 200px; object-fit: cover;">
                     
-                    <!-- Card Body -->
                     <div class="card-body">
-                        <!-- Company Name -->
                         <h5 class="card-title">{{ company.name }}</h5>
-                        <!-- Company Description -->
                         <p class="card-text">{{ company.description|truncatewords:20 }}</p>
                     </div>
                 </a>

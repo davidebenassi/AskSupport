@@ -1,15 +1,17 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h2>Open Tickets</h2>
-    <ul>
+<div class="container mt-5">
+    <!-- Open Tickets Section -->
+    <h2 class="mb-4">Open Tickets</h2>
+    <ul class="list-group mb-5">
         {% for ticket in open_tickets %}
-            <li>
-                <a href="#" onclick="openChatModal('{{ ticket.id }}')">{{ ticket.title }} - {{ ticket.description }}</a>
-            </li>
+        <li class="list-group-item">
+            <a href="#" onclick="openChatModal('{{ ticket.id }}')">{{ ticket.title }} - {{ ticket.description }}</a>
+        </li>
         {% endfor %}
     </ul>
-    
+
     <!-- Modal Pop-up per la Chat -->
     <div class="modal fade" id="chatModal" tabindex="-1" aria-labelledby="chatModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
@@ -34,80 +36,79 @@
             </div>
         </div>
     </div>
-    
-    <script>
-        function openChatModal(ticketId) {
-            // Imposta l'ID del ticket nel modal
-            document.getElementById('modalTicketId').textContent = ticketId;
-            document.getElementById('chatTicketId').value = ticketId;
-            
-            // Effettua una richiesta AJAX per ottenere i messaggi della chat
-            fetch(`/tickets/${ticketId}/messages/`)
-                .then(response => response.json())
-                .then(data => {
-                    const chatMessages = document.getElementById('chatMessages');
-                    chatMessages.innerHTML = ''; // Resetta i messaggi
-    
-                    // Inserisci i messaggi nel modal
-                    data.messages.forEach(message => {
-                        const messageElement = document.createElement('div');
-                        messageElement.classList.add('chat-message');
-                        messageElement.innerHTML = `<strong>${message.sender__username}</strong> <small>(${formatDate(message.timestamp)})</small> : ${message.content}`;
-                        chatMessages.appendChild(messageElement);
-                    });
-    
-                    // Scrolla alla fine dei messaggi
-                    chatMessages.scrollTop = chatMessages.scrollHeight;
-    
-                    // Apri il modal
-                    const chatModal = new bootstrap.Modal(document.getElementById('chatModal'));
-                    chatModal.show();
-                });
-        }
-    
-        // Gestisce l'invio del messaggio
-        document.getElementById('chatForm').addEventListener('submit', function(event) {
-            event.preventDefault();
-            
-            const formData = new FormData(this);
-            
-            fetch(`/tickets/${formData.get('ticket_id')}/send_message/`, {
-                method: 'POST',
-                body: formData
-            })
+
+    <!-- Pending Tickets Section -->
+    <h2 class="mb-4">Pending Tickets</h2>
+    <ul class="list-group mb-5">
+        {% for ticket in pending_tickets %}
+        <li class="list-group-item">
+            <p class="mb-1"><strong>{{ ticket.title }}</strong> - {{ ticket.description }}</p>
+            <small>Created: {{ ticket.created_at }}</small>
+        </li>
+        {% endfor %}
+    </ul>
+
+    <!-- Closed Tickets Section -->
+    <h2 class="mb-4">Closed Tickets</h2>
+    <ul class="list-group">
+        {% for ticket in closed_tickets %}
+        <li class="list-group-item">
+            <p class="mb-1"><strong>{{ ticket.title }}</strong> - {{ ticket.description }}</p>
+            <small>Created: {{ ticket.created_at }}</small>
+            <br>
+            <small>Closed because: {{ ticket.close_reason }}</small>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+
+<script>
+    function openChatModal(ticketId) {
+        // Imposta l'ID del ticket nel modal
+        document.getElementById('modalTicketId').textContent = ticketId;
+        document.getElementById('chatTicketId').value = ticketId;
+
+        // Effettua una richiesta AJAX per ottenere i messaggi della chat
+        fetch(`/tickets/${ticketId}/messages/`)
             .then(response => response.json())
             .then(data => {
-                if (data.success) {
-                    openChatModal(formData.get('ticket_id'));  // Ricarica i messaggi
-                    document.getElementById('chatMessageContent').value = '';  // Resetta il campo messaggio
-                }
-            });
-        });
-    </script>
+                const chatMessages = document.getElementById('chatMessages');
+                chatMessages.innerHTML = ''; // Resetta i messaggi
 
-    <h2>Pending Tickets</h2>
-    <ul>
-        {% for ticket in pending_tickets %}
-        <li>
-            <p>
-                {{ ticket.title }} - {{ ticket.description }} 
-                <br>
-                Created : {{ ticket.created_at }}
-            </p>
-        </li>
-        {% endfor %}
-    </ul>
-    
-    <h2>Closed Tickets</h2>
-    <ul>
-        {% for ticket in closed_tickets %}
-        <li>
-            {{ ticket.title }} - {{ ticket.description }} 
-            <br>
-            Created : {{ ticket.created_at }}
-            <br>
-            Closed because : {{ ticket.close_reason }}
-        </li>
-        {% endfor %}
-    </ul>
+                // Inserisci i messaggi nel modal
+                data.messages.forEach(message => {
+                    const messageElement = document.createElement('div');
+                    messageElement.classList.add('mb-2');
+                    messageElement.innerHTML = `<strong>${message.sender__username}</strong> <small>(${formatDate(message.timestamp)})</small>: ${message.content}`;
+                    chatMessages.appendChild(messageElement);
+                });
+
+                // Scrolla alla fine dei messaggi
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+
+                // Apri il modal
+                const chatModal = new bootstrap.Modal(document.getElementById('chatModal'));
+                chatModal.show();
+            });
+    }
+
+    // Gestisce l'invio del messaggio
+    document.getElementById('chatForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const formData = new FormData(this);
+
+        fetch(`/tickets/${formData.get('ticket_id')}/send_message/`, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                openChatModal(formData.get('ticket_id'));  // Ricarica i messaggi
+                document.getElementById('chatMessageContent').value = '';  // Resetta il campo messaggio
+            }
+        });
+    });
+</script>
 {% endblock %}

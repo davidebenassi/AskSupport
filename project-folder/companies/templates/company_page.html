@@ -1,40 +1,45 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1>{{ company.name }}</h1>
-    <p>{{ company.description }}</p>
-    <p>Admin: {{ company.admin.username }}</p>
-    <p>Email di contatto: {{ company.admin.email }}</p>
-
-    <h2> FAQ Session </h2>
-    <div class="accordion" id="faqAccordion">
-        {% for faq in faqs %}
-        <div class="accordion-item">
-            <h2 class="accordion-header" id="heading{{ faq.id }}">
-                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ faq.id }}" aria-expanded="false" aria-controls="collapse{{ faq.id }}">
-                    <strong> {{ faq.question }} </strong>
-                </button>
-            </h2>
-            <div id="collapse{{ faq.id }}" class="accordion-collapse collapse" aria-labelledby="heading{{ faq.id }}" data-bs-parent="#faqAccordion">
-                <div class="accordion-body">
-                    {{ faq.answer }}
-                </div>
-            </div>
-        </div>
-        {% endfor %}
+<div class="container mt-5">
+    <div class="alert alert-info">
+        <h1 class="mb-4">{{ company.name }}</h1>
+        <p>{{ company.description }}</p>
+        <p><strong>Admin:</strong> {{ company.admin.username }}</p>
+        <p><strong>Contact Email:</strong> {{ company.admin.email }}</p>
     </div>
 
-
-
-    {% if user.is_authenticated and not "CompanyAdministrators" in user.groups.all.0.name and not "Employees" in user.groups.all.0.name %}
-        <h3>Open a Support Ticket</h3>
-        <form method="post">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit">Create Ticket</button>
-        </form>
+    <h2 class="mt-5 mb-4">FAQ Session</h2>
+    {% if faqs %}
+        <div class="accordion" id="faqAccordion">
+            {% for faq in faqs %}
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="heading{{ faq.id }}">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ faq.id }}" aria-expanded="false" aria-controls="collapse{{ faq.id }}">
+                        <strong>{{ faq.question }}</strong>
+                    </button>
+                </h2>
+                <div id="collapse{{ faq.id }}" class="accordion-collapse collapse" aria-labelledby="heading{{ faq.id }}" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body">
+                        {{ faq.answer }}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
     {% else %}
-        <p> <a href="{% url 'user-signup' %}"> Singup </a> as "User" if ypu need to open a support ticket with the company </p>
+        <p class="alert alert-warning">There are no FAQs yet.</p>
     {% endif %}
 
+    {% if user.is_authenticated and not "CompanyAdministrators" in user.groups.all.0.name and not "Employees" in user.groups.all.0.name %}
+        <h3 class="mt-5 mb-4">Open a Support Ticket</h3>
+        <form method="post" class="p-4 border rounded bg-light">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-primary w-100 mt-3">Create Ticket</button>
+        </form>
+    {% else %}
+        <p class="mt-4"><a href="{% url 'user-signup' %}">Signup</a> as "User" if you need to open a support ticket with the company.</p>
+    {% endif %}
+</div>
 {% endblock %}
