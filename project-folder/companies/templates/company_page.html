@@ -5,11 +5,19 @@
     <div class="alert alert-info">
         <h1 class="mb-4">{{ company.name }}</h1>
         <p>{{ company.description }}</p>
-        <p><strong>Admin:</strong> {{ company.admin.username }}</p>
         <p><strong>Contact Email:</strong> {{ company.admin.email }}</p>
     </div>
 
     <h2 class="mt-5 mb-4">FAQ Session</h2>
+
+    <!-- Barra di ricerca -->
+    <form method="get" class="mb-4">
+        <div class="input-group">
+            <input type="text" class="form-control" name="q" placeholder="Search FAQs" value="{{ request.GET.q }}">
+            <button class="btn btn-primary" type="submit">Search</button>
+        </div>
+    </form>
+
     {% if faqs %}
         <div class="accordion" id="faqAccordion">
             {% for faq in faqs %}

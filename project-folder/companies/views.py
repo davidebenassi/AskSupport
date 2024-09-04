@@ -16,6 +16,7 @@ from faq.models import FAQ
 from users.forms import ConfirmPasswordForm, EditUserForm
 from django.contrib.auth.views import PasswordChangeView
 from faq.forms import FAQCreateForm
+from django.db.models import Q
 
 def is_admin(user):
     return user.groups.filter(name='CompanyAdministrators').exists()
@@ -39,8 +40,21 @@ class CompanyPageView(FormMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         company = self.get_object()
-        context['faqs'] = company.faqs.all().filter(approved=True)
+        
+        query = self.request.GET.get('q', '')
+        
+        if query:
+            faqs = company.faqs.filter(
+                approved=True
+            ).filter(
+                Q(question__icontains=query) | Q(answer__icontains=query)
+            )
+        else:
+            faqs = company.faqs.all().filter(approved=True)
+        
+        context['faqs'] = faqs
         context['form'] = self.get_form()
+        context['query'] = query  # Passa la query al template per prepopolare la barra di ricerca
         return context
 
     def get_success_url(self):
