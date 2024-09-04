@@ -1,11 +1,13 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h2>Registrazione Utente</h2>
-    <form method="POST">
+<div class="container mt-5">
+    <h2 class="mb-4">User Signup</h2>
+    <form method="POST" class="p-4 border rounded bg-light">
         {% csrf_token %}
         {{ form.userForm.as_p }}
         {{ form.userProfileForm.as_p }}
-        <button type="submit">Registra Utente</button>
+        <button type="submit" class="btn btn-primary w-100 mt-3">Signup</button>
     </form>
+</div>
 {% endblock %}

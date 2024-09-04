@@ -1,52 +1,89 @@
 {% extends "base.html" %}
 
-<!--{% block head %}
-
-{% load static %}
-
-<link rel="stylesheet" type="text/css" href='{% static "/css/employee_modal.css" %}'>
-<script type="text/javascript" src='{% static "/js/employee_modal.js" %}'></script>
-
-{% endblock %}-->
-
 {% block content %}
-    <h2>Admin Dashboard</h2>
+<div class="container mt-4">
+    <h2>Admin Dashboard - {{user.username}}</h2>
     {% if user.is_authenticated %}
-        <p> Utente : {{user.username}}</p>
-        <p> Amministratore di : {{user.related_company}}</p>
+        <div class="row">
+            <div class="col-md-8">
 
-        <h3>Dipendenti</h3>
+                <h3>Employees</h3>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for employee in employees %}
+                            <tr>
+                                <td>{{ employee.user.username }}</td>
+                                <td>{{ employee.user.email }}</td>
+                                <td>
+                                    <form method="POST" action="{% url 'remove-employee' employee.id %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-danger">Remove</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
 
-        <table>
-            <thead>
-                <tr>
-                    <th>Username</th>
-                    <th>Email</th>
-                    <th>Rimuovi</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for employee in employees %}
-                    <tr>
-                        <td>{{ employee.user.username }}</td>
-                        <td>{{ employee.user.email }}</td>
-                        <td>
-                            <form method="POST" action="{% url 'remove-employee' employee.id %}">
-                                {% csrf_token %}
-                                <button type="submit">Rimuovi</button>
-                            </form>
-                        </td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                <div class="mt-4">
+                    <h4>Legend</h4>
+                    <ul class="list-group">
+                        <li class="list-group-item">Total Tickets: <span class="badge bg-primary">{{ total_tickets }}</span></li>
+                        <li class="list-group-item">Pending Tickets: <span class="badge bg-warning">{{ pending_tickets }}</span></li>
+                        <li class="list-group-item">Open Tickets: <span class="badge bg-info">{{ open_tickets }}</span></li>
+                        <li class="list-group-item">Closed Tickets: <span class="badge bg-success">{{ closed_tickets }}</span></li>
+                    </ul>
 
-        <h2>Registra nuovo Employee</h2>
-        <form method="POST">
-            {% csrf_token %}
-            {{ form.userForm.as_p }}
-            <button type="submit">Register</button>
-        </form>
+                    <canvas id="ticketsChart" class="mt-4"></canvas>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <h2>Register New Employee</h2>
+                <form method="POST" class="p-3 border rounded bg-light">
+                    {% csrf_token %}
+                    {{ form.userForm.as_p }}
+                    <button type="submit" class="btn btn-primary w-100">Register</button>
+                </form>
+            </div>
+        </div>
     {% endif %}
-{% endblock %}
+</div>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    var ctx = document.getElementById('ticketsChart').getContext('2d');
+    var ticketsChart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: ['Pending', 'Open', 'Closed'],
+            datasets: [{
+                label: 'Tickets',
+                data : [ `{{ pending_tickets }}`, `{{ open_tickets }}`, `{{ closed_tickets }}` ],
+                backgroundColor: ['#FFC107', '#17A2B8', '#28A745'],
+                borderColor: ['#FFC107', '#17A2B8', '#28A745'],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                },
+                title: {
+                    display: true,
+                    text: 'Tickets Distribution'
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

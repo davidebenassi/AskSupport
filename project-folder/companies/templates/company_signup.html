@@ -1,13 +1,15 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h2>Registrazione Azienda</h2>
-    <form method="POST">
+<div class="container mt-5">
+    <h2 class="mb-4">Company Signup</h2>
+    <form method="POST" class="p-4 border rounded bg-light">
         {% csrf_token %}
-        <h5>Dati Amministratore</h5>
+        <h5 class="mb-3">Company Admin</h5>
         {{ form.adminForm.as_p }}
-        <h5>Dati Azienda</h5>
+        <h5 class="mt-4 mb-3">Company Informations</h5>
         {{ form.companyForm.as_p }}
-        <button type="submit">Registra Azienda</button>
+        <button type="submit" class="btn btn-primary w-100 mt-3">Signup</button>
     </form>
+</div>
 {% endblock %}

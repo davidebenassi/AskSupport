@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic import FormView, DetailView
 from django.urls import reverse_lazy, reverse
-from django.contrib.auth.decorators import user_passes_test, login_required
+from django.contrib.auth.decorators import user_passes_test
 from django.core.exceptions import PermissionDenied
 from braces.views import GroupRequiredMixin
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -16,6 +16,7 @@ from faq.models import FAQ
 from users.forms import ConfirmPasswordForm, EditUserForm
 from django.contrib.auth.views import PasswordChangeView
 from faq.forms import FAQCreateForm
+from django.db.models import Q
 
 def is_admin(user):
     return user.groups.filter(name='CompanyAdministrators').exists()
@@ -39,8 +40,21 @@ class CompanyPageView(FormMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         company = self.get_object()
-        context['faqs'] = company.faqs.all().filter(approved=True)
+        
+        query = self.request.GET.get('q', '')
+        
+        if query:
+            faqs = company.faqs.filter(
+                approved=True
+            ).filter(
+                Q(question__icontains=query) | Q(answer__icontains=query)
+            )
+        else:
+            faqs = company.faqs.all().filter(approved=True)
+        
+        context['faqs'] = faqs
         context['form'] = self.get_form()
+        context['query'] = query  # Passa la query al template per prepopolare la barra di ricerca
         return context
 
     def get_success_url(self):
@@ -69,27 +83,33 @@ class AdminDashboardView(GroupRequiredMixin, FormMixin, DetailView):
     form_class = EmployeeSignupForm
 
     def get_object(self):
-        # Restituisci l'azienda associata all'utente corrente
         return self.request.user.related_company
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        company = self.get_object()  # Recupera l'oggetto Company
+        company = self.get_object()  
         employees = EmployeeProfile.objects.filter(company=company)
         context['employees'] = employees
-        context['form'] = self.get_form()  # Aggiungi il form al contesto
+        context['form'] = self.get_form() 
+
+        # Aggiunta dei dati per il grafico a torta
+        context['total_tickets'] = Ticket.objects.filter(company=company).count()
+        context['pending_tickets'] = Ticket.objects.filter(company=company, status=Ticket.PENDING).count()
+        context['open_tickets'] = Ticket.objects.filter(company=company, status=Ticket.OPEN).count()
+        context['closed_tickets'] = Ticket.objects.filter(company=company, status=Ticket.CLOSED).count()
+
         return context
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
-        kwargs['company'] = self.get_object()  # Passa l'azienda al form
+        kwargs['company'] = self.get_object()
         return kwargs
 
     def get_success_url(self):
         return reverse_lazy('admin-dashboard')
 
     def post(self, request, *args, **kwargs):
-        self.object = self.get_object()  # Imposta l'oggetto Company
+        self.object = self.get_object()
         form = self.get_form()
         if form.is_valid():
             return self.form_valid(form)
@@ -97,7 +117,7 @@ class AdminDashboardView(GroupRequiredMixin, FormMixin, DetailView):
             return self.form_invalid(form)
 
     def form_valid(self, form):
-        form.save()  # Salva i dati dell'employee
+        form.save() 
         return super().form_valid(form)
 
 @user_passes_test(is_admin)
@@ -163,11 +183,13 @@ class CompanySignupView(FormView):
 
 
 # * --- COMPANY UPDATE --- * #
-class CompanyAdminPasswordChangeView(LoginRequiredMixin, PasswordChangeView):
+class CompanyAdminPasswordChangeView(GroupRequiredMixin, PasswordChangeView):
+    group_required = ['CompanyAdministrators']
     template_name = 'change_password.html'
     success_url = reverse_lazy('company-profile')
 
-class CompanyProfileView(DetailView):
+class CompanyProfileView(GroupRequiredMixin, DetailView):
+    group_required = ['CompanyAdministrators']
     model = Company
     template_name = 'company_profile.html'
 
@@ -175,7 +197,8 @@ class CompanyProfileView(DetailView):
         return self.request.user.related_company
     
 
-class DeleteCompanyView(FormView):
+class DeleteCompanyView(GroupRequiredMixin, FormView):
+    group_required = ['CompanyAdministrators']
     template_name = 'delete_confirmation.html'
     form_class = ConfirmPasswordForm
     success_url = reverse_lazy('home')  
@@ -192,7 +215,8 @@ class DeleteCompanyView(FormView):
             form.add_error('password', 'Incorrect password.')
             return self.form_invalid(form)
         
-class UpdateCompanyProfileView(View):
+class UpdateCompanyProfileView(GroupRequiredMixin, View):
+    group_required = ['CompanyAdministrators']
     template_name = 'update_company_profile.html'
     success_url = reverse_lazy('company-profile')
 
