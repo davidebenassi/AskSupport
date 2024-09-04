@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic import FormView, DetailView
 from django.urls import reverse_lazy, reverse
-from django.contrib.auth.decorators import user_passes_test, login_required
+from django.contrib.auth.decorators import user_passes_test
 from django.core.exceptions import PermissionDenied
 from braces.views import GroupRequiredMixin
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -169,11 +169,13 @@ class CompanySignupView(FormView):
 
 
 # * --- COMPANY UPDATE --- * #
-class CompanyAdminPasswordChangeView(LoginRequiredMixin, PasswordChangeView):
+class CompanyAdminPasswordChangeView(GroupRequiredMixin, PasswordChangeView):
+    group_required = ['CompanyAdministrators']
     template_name = 'change_password.html'
     success_url = reverse_lazy('company-profile')
 
-class CompanyProfileView(DetailView):
+class CompanyProfileView(GroupRequiredMixin, DetailView):
+    group_required = ['CompanyAdministrators']
     model = Company
     template_name = 'company_profile.html'
 
@@ -181,7 +183,8 @@ class CompanyProfileView(DetailView):
         return self.request.user.related_company
     
 
-class DeleteCompanyView(FormView):
+class DeleteCompanyView(GroupRequiredMixin, FormView):
+    group_required = ['CompanyAdministrators']
     template_name = 'delete_confirmation.html'
     form_class = ConfirmPasswordForm
     success_url = reverse_lazy('home')  
@@ -198,7 +201,8 @@ class DeleteCompanyView(FormView):
             form.add_error('password', 'Incorrect password.')
             return self.form_invalid(form)
         
-class UpdateCompanyProfileView(View):
+class UpdateCompanyProfileView(GroupRequiredMixin, View):
+    group_required = ['CompanyAdministrators']
     template_name = 'update_company_profile.html'
     success_url = reverse_lazy('company-profile')
 
