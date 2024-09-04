@@ -7,31 +7,36 @@
     <ul class="list-group mb-5">
         {% for ticket in open_tickets %}
         <li class="list-group-item">
-            <a href="#" onclick="openChatModal('{{ ticket.id }}')">{{ ticket.title }} - {{ ticket.description }}</a>
+            <a href="#" onclick="openChatModal('{{ ticket.id }}', '{{ ticket.title }}', '{{ ticket.description }}', 'open')">{{ ticket.title }} - {{ ticket.description }}</a>
         </li>
         {% endfor %}
     </ul>
 
-    <!-- Modal Pop-up per la Chat -->
+    <!-- Modal Pop-up for Open Tickets -->
     <div class="modal fade" id="chatModal" tabindex="-1" aria-labelledby="chatModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="chatModalLabel">Chat for Ticket #<span id="modalTicketId"></span></h5>
+                    <h5 class="modal-title" id="chatModalLabel">Chat for Ticket : <strong><span id="modalTicketTitle"></strong></span></h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-header">
+                    <p class="modal-title" id="chatModalLabel"><span id="modalTicketDesc"></span></p>
                 </div>
                 <div class="modal-body">
                     <div id="chatMessages" class="chat-messages" style="height: 300px; overflow-y: auto;">
                         <!-- Messaggi della chat verranno caricati qui -->
                     </div>
-                    <form id="chatForm" method="POST">
-                        {% csrf_token %}
-                        <input type="hidden" name="ticket_id" id="chatTicketId">
-                        <div class="input-group mt-3">
-                            <textarea class="form-control" name="content" id="chatMessageContent" rows="2" placeholder="Type your message"></textarea>
-                            <button class="btn btn-primary" type="submit">Send</button>
-                        </div>
-                    </form>
+                    <div id="chatFormContainer">
+                        <form id="chatForm" method="POST">
+                            {% csrf_token %}
+                            <input type="hidden" name="ticket_id" id="chatTicketId">
+                            <div class="input-group mt-3">
+                                <textarea class="form-control" name="content" id="chatMessageContent" rows="2" placeholder="Type your message"></textarea>
+                                <button class="btn btn-primary" type="submit">Send</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
@@ -52,20 +57,19 @@
     <h2 class="mb-4">Closed Tickets</h2>
     <ul class="list-group">
         {% for ticket in closed_tickets %}
+
         <li class="list-group-item">
-            <p class="mb-1"><strong>{{ ticket.title }}</strong> - {{ ticket.description }}</p>
-            <small>Created: {{ ticket.created_at }}</small>
-            <br>
-            <small>Closed because: {{ ticket.close_reason }}</small>
+            <a href="#" onclick="openChatModal('{{ ticket.id }}', '{{ ticket.title }}', '{{ ticket.description }}', 'closed')">{{ ticket.title }}</a> <small> | Closed because: {{ ticket.close_reason }}</small>
         </li>
         {% endfor %}
     </ul>
 </div>
 
 <script>
-    function openChatModal(ticketId) {
-        // Imposta l'ID del ticket nel modal
-        document.getElementById('modalTicketId').textContent = ticketId;
+    function openChatModal(ticketId, ticketTitle, ticketDescription, ticketStatus) {
+       
+        document.getElementById('modalTicketTitle').textContent = ticketTitle;
+        document.getElementById('modalTicketDesc').textContent = ticketDescription;
         document.getElementById('chatTicketId').value = ticketId;
 
         // Effettua una richiesta AJAX per ottenere i messaggi della chat
@@ -86,29 +90,60 @@
                 // Scrolla alla fine dei messaggi
                 chatMessages.scrollTop = chatMessages.scrollHeight;
 
+                const chatForm = document.getElementById('chatForm');
+                if (ticketStatus === 'open') {
+                    chatForm.style.display = 'block';
+                    document.getElementById('chatTicketId').value = ticketId;
+
+                    chatForm.addEventListener('submit', function(event) {
+                        event.preventDefault();
+
+                        const formData = new FormData(this);
+
+                        fetch(`/tickets/${formData.get('ticket_id')}/send_message/`, {
+                            method: 'POST',
+                            body: formData
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                document.getElementById('chatMessageContent').value = '';
+                                updateChatMessages(formData.get('ticket_id'));
+                                
+                            }
+                        });
+                    });
+                } 
+                else {
+                    chatForm.style.display = 'none';
+                }   
+
                 // Apri il modal
                 const chatModal = new bootstrap.Modal(document.getElementById('chatModal'));
                 chatModal.show();
             });
     }
 
-    // Gestisce l'invio del messaggio
-    document.getElementById('chatForm').addEventListener('submit', function(event) {
-        event.preventDefault();
+    function updateChatMessages(ticketId) {
+        fetch(`/tickets/${ticketId}/messages/`)
+            .then(response => response.json())
+            .then(data => {
+                const chatMessages = document.getElementById('chatMessages');
+                chatMessages.innerHTML = ''; // Resetta i messaggi
 
-        const formData = new FormData(this);
+                data.messages.forEach(message => {
+                    const messageElement = document.createElement('div');
+                    messageElement.classList.add('mb-2');
+                    messageElement.innerHTML = `<strong>${message.sender__username}</strong> <small>(${formatDate(message.timestamp)})</small>: ${message.content}`;
+                    chatMessages.appendChild(messageElement);
+                });
 
-        fetch(`/tickets/${formData.get('ticket_id')}/send_message/`, {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                openChatModal(formData.get('ticket_id'));  // Ricarica i messaggi
-                document.getElementById('chatMessageContent').value = '';  // Resetta il campo messaggio
-            }
-        });
-    });
+                // Scrolla alla fine dei messaggi
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            })
+            .catch(error => {
+                console.error('Errore nel caricamento dei messaggi:', error);
+            });
+    }
 </script>
 {% endblock %}
