@@ -1,0 +1,54 @@
+[
+    {
+        "admin": {
+            "first_name": "Alessandra",
+            "last_name": "Rossi",
+            "username": "adminarossi",
+            "email": "alessandra.rossi@example.com",
+            "password": "PSicura1!"
+        },
+        "company": {
+            "name": "Tech Solutions S.r.l.",
+            "description": "A leading company in innovative tech solutions, providing cutting-edge software and hardware services."
+        }
+    },
+    {
+        "admin": {
+            "first_name": "Lorenzo",
+            "last_name": "Ferrari",
+            "username": "adminlferrari",
+            "email": "lorenzo.ferrari@example.com",
+            "password": "PSicura1!"
+        },
+        "company": {
+            "name": "Green Energy Italia",
+            "description": "Specialists in renewable energy, offering sustainable solutions for a cleaner and greener future."
+        }
+    },
+    {
+        "admin": {
+            "first_name": "Giulia",
+            "last_name": "Esposito",
+            "username": "admingesposito",
+            "email": "giulia.esposito@example.com",
+            "password": "PSicura1!"
+        },
+        "company": {
+            "name": "Design & Build S.p.A.",
+            "description": "An architecture and construction firm known for its modern and sustainable designs in both residential and commercial projects."
+        }
+    },
+    {
+        "admin": {
+            "first_name": "Marco",
+            "last_name": "Romano",
+            "username": "adminmromano",
+            "email": "marco.romano@example.com",
+            "password": "PSicura1!"
+        },
+        "company": {
+            "name": "EduConnect",
+            "description": "A platform dedicated to enhancing educational experiences through advanced e-learning solutions and tools."
+        }
+    }
+]
