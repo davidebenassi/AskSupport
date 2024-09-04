@@ -69,27 +69,33 @@ class AdminDashboardView(GroupRequiredMixin, FormMixin, DetailView):
     form_class = EmployeeSignupForm
 
     def get_object(self):
-        # Restituisci l'azienda associata all'utente corrente
         return self.request.user.related_company
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        company = self.get_object()  # Recupera l'oggetto Company
+        company = self.get_object()  
         employees = EmployeeProfile.objects.filter(company=company)
         context['employees'] = employees
-        context['form'] = self.get_form()  # Aggiungi il form al contesto
+        context['form'] = self.get_form() 
+
+        # Aggiunta dei dati per il grafico a torta
+        context['total_tickets'] = Ticket.objects.filter(company=company).count()
+        context['pending_tickets'] = Ticket.objects.filter(company=company, status=Ticket.PENDING).count()
+        context['open_tickets'] = Ticket.objects.filter(company=company, status=Ticket.OPEN).count()
+        context['closed_tickets'] = Ticket.objects.filter(company=company, status=Ticket.CLOSED).count()
+
         return context
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
-        kwargs['company'] = self.get_object()  # Passa l'azienda al form
+        kwargs['company'] = self.get_object()
         return kwargs
 
     def get_success_url(self):
         return reverse_lazy('admin-dashboard')
 
     def post(self, request, *args, **kwargs):
-        self.object = self.get_object()  # Imposta l'oggetto Company
+        self.object = self.get_object()
         form = self.get_form()
         if form.is_valid():
             return self.form_valid(form)
@@ -97,7 +103,7 @@ class AdminDashboardView(GroupRequiredMixin, FormMixin, DetailView):
             return self.form_invalid(form)
 
     def form_valid(self, form):
-        form.save()  # Salva i dati dell'employee
+        form.save() 
         return super().form_valid(form)
 
 @user_passes_test(is_admin)
