@@ -72,14 +72,13 @@
         document.getElementById('modalTicketDesc').textContent = ticketDescription;
         document.getElementById('chatTicketId').value = ticketId;
 
-        // Effettua una richiesta AJAX per ottenere i messaggi della chat
+        // AJAX request to get messages //
         fetch(`/tickets/${ticketId}/messages/`)
             .then(response => response.json())
             .then(data => {
                 const chatMessages = document.getElementById('chatMessages');
-                chatMessages.innerHTML = ''; // Resetta i messaggi
+                chatMessages.innerHTML = ''; 
 
-                // Inserisci i messaggi nel modal
                 data.messages.forEach(message => {
                     const messageElement = document.createElement('div');
                     messageElement.classList.add('mb-2');
@@ -87,29 +86,26 @@
                     chatMessages.appendChild(messageElement);
                 });
 
-                // Scrolla alla fine dei messaggi
                 chatMessages.scrollTop = chatMessages.scrollHeight;
 
                 const chatForm = document.getElementById('chatForm');
                 if (ticketStatus === 'open') {
                     chatForm.style.display = 'block';
-                    document.getElementById('chatTicketId').value = ticketId;
-
+    
                     chatForm.addEventListener('submit', function(event) {
                         event.preventDefault();
 
                         const formData = new FormData(this);
 
-                        fetch(`/tickets/${formData.get('ticket_id')}/send_message/`, {
+                        fetch(`/tickets/${ticketId}/send_message/`, {
                             method: 'POST',
                             body: formData
                         })
                         .then(response => response.json())
                         .then(data => {
                             if (data.success) {
-                                document.getElementById('chatMessageContent').value = '';
-                                updateChatMessages(formData.get('ticket_id'));
-                                
+                                updateChatMessages(ticketId);
+                                document.getElementById('chatMessageContent').value = '';                                
                             }
                         });
                     });
@@ -118,7 +114,7 @@
                     chatForm.style.display = 'none';
                 }   
 
-                // Apri il modal
+                // Open modal //
                 const chatModal = new bootstrap.Modal(document.getElementById('chatModal'));
                 chatModal.show();
             });
@@ -129,7 +125,7 @@
             .then(response => response.json())
             .then(data => {
                 const chatMessages = document.getElementById('chatMessages');
-                chatMessages.innerHTML = ''; // Resetta i messaggi
+                chatMessages.innerHTML = '';
 
                 data.messages.forEach(message => {
                     const messageElement = document.createElement('div');
@@ -142,7 +138,7 @@
                 chatMessages.scrollTop = chatMessages.scrollHeight;
             })
             .catch(error => {
-                console.error('Errore nel caricamento dei messaggi:', error);
+                console.error('Error fetching messages:', error);
             });
     }
 </script>
