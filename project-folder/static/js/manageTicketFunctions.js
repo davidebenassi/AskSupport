@@ -75,7 +75,7 @@ function updateChatMessages(ticketId) {
 }
 
 function submitCloseForm(ticketId) {
-    var reason = prompt("Please enter the reason for rejection:");
+    var reason = prompt("Please enter the close reason:");
     if (reason !== null && reason.trim() !== "") {
         document.getElementById('close-reason-' + ticketId).value = reason;
         document.getElementById('close-ticket-form-' + ticketId).submit();
