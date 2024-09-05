@@ -1,0 +1,5 @@
+-i https://pypi.org/simple
+asgiref==3.8.1; python_version >= '3.8'
+django==5.1; python_version >= '3.10'
+django-braces==1.15.0
+sqlparse==0.5.1; python_version >= '3.8'
