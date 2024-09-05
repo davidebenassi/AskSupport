@@ -1,0 +1,37 @@
+[
+    {
+        "first_name": "Sara",
+        "last_name": "Marconi",
+        "username": "emp_smarconi",
+        "email": "sara.marconi@example.com",
+        "password": "PSicura1!"
+    },
+    {
+        "first_name": "Riccardo",
+        "last_name": "Leone",
+        "username": "emp_rleone",
+        "email": "riccardo.leone@example.com",
+        "password": "PSicura1!"
+    },
+    {
+        "first_name": "Elena",
+        "last_name": "Ricci",
+        "username": "emp_ericci",
+        "email": "elena.ricci@example.com",
+        "password": "PSicura1!"
+    },
+    {
+        "first_name": "Fabio",
+        "last_name": "Galli",
+        "username": "emp_fgalli",
+        "email": "fabio.galli@example.com",
+        "password": "PSicura1!"
+    },
+    {
+        "first_name": "Chiara",
+        "last_name": "Monti",
+        "username": "emp_cmonti",
+        "email": "chiara.monti@example.com",
+        "password": "PSicura1!"
+    }
+]

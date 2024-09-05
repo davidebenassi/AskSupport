@@ -1,0 +1,52 @@
+[
+    {
+        "question": "What is the difference between RAM and storage?",
+        "answer": "RAM is temporary memory used for running programs, while storage is permanent memory for saving files.",
+        "approved": true
+    },
+    {
+        "question": "How does cloud computing work?",
+        "answer": "Cloud computing allows users to access and store data on remote servers instead of local storage.",
+        "approved": false
+    },
+    {
+        "question": "What is a VPN and why should I use it?",
+        "answer": "A VPN (Virtual Private Network) encrypts your internet connection, protecting your data from hackers and maintaining privacy.",
+        "approved": true
+    },
+    {
+        "question": "What is the role of a firewall in a network?",
+        "answer": "A firewall monitors and controls incoming and outgoing network traffic, acting as a security barrier against threats.",
+        "approved": false
+    },
+    {
+        "question": "What is renewable energy?",
+        "answer": "Renewable energy is energy generated from natural sources such as sunlight, wind, and water, which are naturally replenished.",
+        "approved": true
+    },
+    {
+        "question": "How does solar energy work?",
+        "answer": "Solar energy is captured through photovoltaic cells that convert sunlight into electricity for use in homes and businesses.",
+        "approved": false
+    },
+    {
+        "question": "What are the benefits of wind energy?",
+        "answer": "Wind energy is a clean, renewable source that reduces carbon emissions and dependence on fossil fuels.",
+        "approved": true
+    },
+    {
+        "question": "What is sustainable architecture?",
+        "answer": "Sustainable architecture focuses on minimizing the environmental impact of buildings through energy efficiency and material choices.",
+        "approved": false
+    },
+    {
+        "question": "What is the purpose of green building certifications?",
+        "answer": "Green building certifications, like LEED, evaluate a building’s sustainability, energy use, and environmental impact.",
+        "approved": true
+    },
+    {
+        "question": "What are the advantages of using recycled materials in construction?",
+        "answer": "Using recycled materials reduces waste, lowers construction costs, and helps protect natural resources.",
+        "approved": false
+    }
+]
