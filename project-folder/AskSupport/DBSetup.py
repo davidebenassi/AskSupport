@@ -1,7 +1,6 @@
-from companies.models import Company, EmployeeProfile
+from companies.models import Company, EmployeeProfile, FAQ
 from tickets.models import Ticket, Message
 from users.models import UserProfile
-from faq.models import FAQ
 from django.contrib.auth.models import User, Group
 from AskSupport.settings import STATICFILES_DIRS
 import os
@@ -21,6 +20,7 @@ def reset_tables_ids(tables):
 def eraseDB():
     print("Erasing DataBase")
     
+    FAQ.objects.all().delete()
     Message.objects.all().delete()
     Ticket.objects.all().delete()
     EmployeeProfile.objects.all().delete()
@@ -52,12 +52,15 @@ def eraseDB():
 
 def initDB():
 
-    tables = ['auth_user', 'companies_company', 'companies_employeeprofile', 'users_userprofile', 'tickets_ticket', 'tickets_message', 'faq_faq']
+    tables = ['auth_user', 'companies_company', 'companies_employeeprofile', 'companies_faq', 'users_userprofile', 'tickets_ticket', 'tickets_message', 'faq_faq']
     reset_tables_ids(tables)
 
     admin = User.objects.create_superuser(username=ADMIN_USERNAME, password=ADMIN_PWD)
     admin.save()
     print(f"Superuser Created with username : {ADMIN_USERNAME}  -  password : {ADMIN_PWD}")
+
+    adminGroup, created = Group.objects.get_or_create(name='CompanyAdministrators')
+    empGroup, created = Group.objects.get_or_create(name='Employees')
 
     ## * Creazione Utenti * ##
     jsonFile = os.path.join(os.path.dirname(__file__), 'DBSetupJson', 'users.json')
@@ -91,7 +94,7 @@ def initDB():
                 first_name = item['admin']['first_name'],
                 last_name = item['admin']['last_name']
             )
-        Group.objects.get(name='CompanyAdministrators').user_set.add(admin)
+        adminGroup.user_set.add(admin)
         admin.save()
         
         c = Company()
@@ -119,7 +122,7 @@ def initDB():
                 last_name = item['last_name']
             )
         
-        Group.objects.get(name='Employees').user_set.add(emp)
+        empGroup.user_set.add(emp)
         emp.save()
 
         empProfile = EmployeeProfile()

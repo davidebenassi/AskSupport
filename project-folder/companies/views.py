@@ -4,18 +4,15 @@ from django.urls import reverse_lazy, reverse
 from django.contrib.auth.decorators import user_passes_test
 from django.core.exceptions import PermissionDenied
 from braces.views import GroupRequiredMixin
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic.edit import FormMixin
 from django.contrib.auth import login, authenticate, logout
 from django.views import View
-from .models import Company, EmployeeProfile
-from .forms import CompanySignupForm, EmployeeSignupForm, CompanyForm
+from .models import Company, EmployeeProfile, FAQ
+from .forms import CompanySignupForm, EmployeeSignupForm, CompanyForm, FAQCreateForm
 from tickets.forms import TicketForm
 from tickets.models import Ticket
-from faq.models import FAQ
 from users.forms import ConfirmPasswordForm, EditUserForm
 from django.contrib.auth.views import PasswordChangeView
-from faq.forms import FAQCreateForm
 from django.db.models import Q
 
 def is_admin(user):

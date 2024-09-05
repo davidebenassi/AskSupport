@@ -40,8 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'companies',
     'users',
-    'tickets',
-    'faq'
+    'tickets'
 ]
 
 MIDDLEWARE = [
@@ -126,7 +125,6 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static/')]
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
-# LOGIN_REDIRECT_URL = "/?login=ok"   # redireziona alla home, ma con un parametro GET
 LOGIN_URL = "/login/?auth=notok"    # redireziona al login, ma con un parametro GET
 
 LOGOUT_REDIRECT_URL = ''

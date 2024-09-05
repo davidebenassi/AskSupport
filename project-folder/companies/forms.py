@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.models import Group
-from .models import Company, EmployeeProfile
+from .models import Company, EmployeeProfile, FAQ
 
 from users.forms import UserForm 
 
@@ -84,3 +84,16 @@ class EmployeeSignupForm(forms.Form):
             employeeProfile.save()
 
         return user, employeeProfile
+    
+class FAQCreateForm(forms.ModelForm):
+    class Meta:
+        model = FAQ
+        fields = ['question', 'answer']
+        labels = {
+            'question' : 'Question',
+            'answer' : 'Answer'
+        }
+        widgets = {
+            'question': forms.Textarea(attrs={'class': 'form-control', 'rows': 1}),
+            'answer': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
+        }
